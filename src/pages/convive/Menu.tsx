@@ -75,7 +75,7 @@ export default function Menu() {
               key={j}
               onClick={() => setChoisi(j)}
               aria-pressed={j === jour}
-              className={`shrink-0 rounded-full px-3 py-1.5 text-sm capitalize border ${
+              className={`shrink-0 rounded-full px-3 py-1.5 text-sm first-letter:uppercase border ${
                 j === jour ? 'bg-ciel text-marine font-bold border-ciel' : 'bg-white border-ligne text-encre'
               }`}
             >
@@ -87,7 +87,7 @@ export default function Menu() {
 
       {jour && (
         <div className="px-4 pt-2 space-y-3">
-          <p className="text-sm text-encre-douce capitalize">{jourLong(jour)}</p>
+          <p className="text-sm text-encre-douce first-letter:uppercase">{jourLong(jour)}</p>
 
           {minutesAvant !== null && minutesAvant <= 15 && minutesAvant > -15 && (
             <Link to="/tickets" className="block">

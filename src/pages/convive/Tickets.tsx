@@ -34,7 +34,7 @@ function GrandTicket({ t, nouveau }: { t: Ticket; nouveau: boolean }) {
         <Photo url={t.menu?.plat?.photo_url ?? null} nom={t.menu?.plat?.nom ?? '?'} className="w-16 h-16 rounded-full shrink-0" />
         <div className="min-w-0">
           <p className="font-bold text-marine">{t.menu?.plat?.nom}</p>
-          <p className="text-xs text-encre-douce capitalize">{jourLong(t.jour)} · {t.creneau ? heure(t.creneau.heure_debut) : ''}</p>
+          <p className="text-xs text-encre-douce first-letter:uppercase">{jourLong(t.jour)} · {t.creneau ? heure(t.creneau.heure_debut) : ''}</p>
           <span className="inline-flex items-center gap-1 mt-1 rounded-full bg-valide-clair text-valide text-xs font-bold px-2"><IconCircleCheck size={13} aria-hidden /> À retirer</span>
         </div>
       </div>
@@ -119,7 +119,7 @@ export default function Tickets() {
                       <span className={`rounded-full text-xs px-2 shrink-0 ${s.style}`}>{s.texte}</span>
                     </div>
                     <div className="flex justify-between gap-2 items-center">
-                      <span className="text-xs text-encre-douce capitalize">{jourLong(t.jour)}</span>
+                      <span className="text-xs text-encre-douce first-letter:uppercase">{jourLong(t.jour)}</span>
                       {t.statut === 'servie' && <Etoiles t={t} />}
                     </div>
                   </div>

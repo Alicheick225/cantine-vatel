@@ -46,7 +46,7 @@ export default function Aujourdhui() {
     <div className="space-y-4 max-w-6xl">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="font-titre font-black text-2xl text-marine capitalize">{jourLong(jour)}</h1>
+          <h1 className="font-titre font-black text-2xl text-marine first-letter:uppercase">{jourLong(jour)}</h1>
           <p className="text-xs text-encre-douce">
             {estAujourdhui ? 'Mis à jour en direct' : 'Consultation'} <span className="inline-block w-2 h-2 rounded-full bg-valide ml-1" aria-hidden />
           </p>

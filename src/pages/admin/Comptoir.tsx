@@ -103,7 +103,7 @@ export default function Comptoir() {
         <Link to="/admin" className="rounded-full bg-white/15 px-3 py-1 text-sm inline-flex items-center gap-1"><IconX size={14} /> Quitter</Link>
       </header>
       <p className="px-4 pt-1 text-sm opacity-85 flex justify-between">
-        <span className="capitalize">{jourLong(aujourdhui())}</span>
+        <span className="first-letter:uppercase">{jourLong(aujourdhui())}</span>
         <span className="font-mono">{tb ? `${tb.servies} servis · ${tb.reservees - tb.servies} attendus` : ''}</span>
       </p>
 

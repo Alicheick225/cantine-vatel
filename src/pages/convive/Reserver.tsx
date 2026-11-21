@@ -64,7 +64,7 @@ export default function Reserver() {
             <h1 className="font-titre font-black text-xl text-marine">{plat.nom}</h1>
             <span className="text-lg"><Prix plat={plat} /></span>
           </div>
-          <p className="text-sm text-encre-douce capitalize">{jourLong(plat.jour)}</p>
+          <p className="text-sm text-encre-douce first-letter:uppercase">{jourLong(plat.jour)}</p>
           {plat.description && <p className="text-sm mt-1">{plat.description}</p>}
           <Pastilles plat={plat} allergies={profil?.allergies ?? []} />
         </div>

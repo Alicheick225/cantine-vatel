@@ -100,7 +100,7 @@ export default function Prevision() {
               ))}
             </div>
             <div className="flex gap-3 mt-1">
-              {parJour.map((d) => <span key={d.jour} className="flex-1 text-center text-xs text-encre-douce capitalize">{jourCourt(d.jour)}</span>)}
+              {parJour.map((d) => <span key={d.jour} className="flex-1 text-center text-xs text-encre-douce first-letter:uppercase">{jourCourt(d.jour)}</span>)}
             </div>
             <p className="text-xs text-encre-douce mt-3">
               Taux de présence observé : <b>{taux} %</b>. Les réservations ferment à 8h le jour même : après, il n'y a plus d'estimation, seulement les réservés.
@@ -110,7 +110,7 @@ export default function Prevision() {
           <Carte>
             <div className="flex flex-wrap justify-between items-start gap-2">
               <div>
-                <h2 className="font-bold text-marine capitalize">{jour && jourLong(jour)} · portions à préparer</h2>
+                <h2 className="font-bold text-marine first-letter:uppercase">{jour && jourLong(jour)} · portions à préparer</h2>
                 <p className="text-xs text-encre-douce">À préparer = attendus × présence ({taux} %) + 5 % de marge</p>
               </div>
               {jour && jour >= aujourdhui() && (

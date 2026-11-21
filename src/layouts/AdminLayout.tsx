@@ -1,7 +1,7 @@
 import { NavLink, Outlet, Link } from 'react-router-dom'
 import { useAuth } from '../auth/AuthProvider'
 import { BandeVatel } from '../components/ui'
-import { IconBowlChopsticks, IconCalendarWeek, IconChartLine, IconLayoutDashboard, IconListSearch, IconLogout, IconScan } from '@tabler/icons-react'
+import { IconBowlChopsticks, IconCalendarWeek, IconChartLine, IconLayoutDashboard, IconListSearch, IconLogout, IconReportAnalytics, IconScan } from '@tabler/icons-react'
 
 // Les mêmes icônes que la maquette admin (Tabler Icons, contour).
 const LIENS = [
@@ -9,6 +9,7 @@ const LIENS = [
   { to: '/admin/menus', label: 'Menus', Icone: IconCalendarWeek },
   { to: '/admin/plats', label: 'Plats', Icone: IconBowlChopsticks },
   { to: '/admin/prevision', label: 'Prévision', Icone: IconChartLine },
+  { to: '/admin/rapports', label: 'Rapports', Icone: IconReportAnalytics },
   { to: '/admin/journal', label: "Journal d'audit", Icone: IconListSearch },
 ]
 
@@ -16,7 +17,7 @@ export default function AdminLayout() {
   const { profil, deconnexion } = useAuth()
   return (
     <div className="min-h-dvh md:flex">
-      <aside className="bg-marine text-white md:w-56 md:min-h-dvh flex md:flex-col">
+      <aside className="bg-marine text-white md:w-56 md:min-h-dvh flex md:flex-col print:hidden">
         <BandeVatel className="hidden md:block" />
         <div className="px-4 py-3 md:py-5 flex items-center gap-2">
           <span className="w-8 h-8 rounded bg-white text-marine font-titre font-black flex items-center justify-center">V</span>
@@ -51,7 +52,7 @@ export default function AdminLayout() {
           <button onClick={deconnexion} className="mt-1 underline opacity-80">Se déconnecter</button>
         </div>
       </aside>
-      <main className="flex-1 bg-fond p-4 md:p-6 min-w-0">
+      <main className="flex-1 bg-fond p-4 md:p-6 min-w-0 print:bg-white print:p-0">
         <Outlet />
       </main>
     </div>

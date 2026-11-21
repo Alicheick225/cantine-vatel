@@ -123,7 +123,7 @@ export default function Parent() {
                   {repas.map((r) => (
                     <li key={r.id} className="py-2 flex items-center gap-2 text-sm">
                       <Photo url={r.menu?.plat?.photo_url ?? null} nom={r.menu?.plat?.nom ?? '?'} className="w-9 h-9 rounded-lg" />
-                      <span className="flex-1">{r.menu?.plat?.nom}<span className="block text-xs text-encre-douce capitalize">{jourLong(r.jour)}</span></span>
+                      <span className="flex-1">{r.menu?.plat?.nom}<span className="block text-xs text-encre-douce first-letter:uppercase">{jourLong(r.jour)}</span></span>
                       <span className="text-xs rounded-full bg-fond px-2">{statut(r)}</span>
                     </li>
                   ))}

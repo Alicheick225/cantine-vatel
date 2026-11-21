@@ -20,6 +20,7 @@ const Menus = lazy(() => import('./pages/admin/Menus'))
 const Plats = lazy(() => import('./pages/admin/Plats'))
 const Prevision = lazy(() => import('./pages/admin/Prevision'))
 const Journal = lazy(() => import('./pages/admin/Journal'))
+const Rapports = lazy(() => import('./pages/admin/Rapports'))
 const Parent = lazy(() => import('./pages/parent/Parent'))
 
 export default function App() {
@@ -54,6 +55,7 @@ export default function App() {
           <Route path="/admin/plats" element={<Plats />} />
           <Route path="/admin/prevision" element={<Prevision />} />
           <Route path="/admin/journal" element={<Journal />} />
+          <Route path="/admin/rapports" element={<Rapports />} />
         </Route>
       </Route>
 

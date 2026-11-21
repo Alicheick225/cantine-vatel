@@ -37,7 +37,7 @@ function Jour({ jour, lignes }: { jour: string; lignes: LigneMenu[] }) {
 
   return (
     <Carte>
-      <h2 className="font-bold text-marine capitalize">{jourLong(jour)}</h2>
+      <h2 className="font-bold text-marine first-letter:uppercase">{jourLong(jour)}</h2>
       {action.isError && <div className="mt-2"><Alerte>{messageErreur(action.error)}</Alerte></div>}
       <ul className="mt-2 divide-y divide-ligne text-sm">
         {lignes.map((l) => {
