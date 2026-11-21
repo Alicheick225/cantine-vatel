@@ -21,6 +21,7 @@ export default function ConviveLayout() {
             key={to}
             to={to}
             end={to === '/'}
+            aria-label={label}
             className={({ isActive }) =>
               `flex-1 flex flex-col items-center pt-2 pb-2.5 text-[11px] ${isActive ? 'text-marine font-bold' : 'text-encre-douce'}`
             }
