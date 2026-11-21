@@ -11,6 +11,10 @@ const EN: Record<string, string> = {
   // Accueil, connexion, inscription
   'Bienvenue {prenom}': 'Welcome {prenom}',
   'Notez ce repas': 'Rate this meal',
+  'Opération': 'Transaction', 'Date et heure': 'Date and time', 'Moyen de paiement': 'Payment method',
+  'paiement simulé (démonstration)': 'simulated payment (demo)', 'Payée par': 'Paid by', 'votre parent': 'your parent',
+  'Motif': 'Reason', 'annulation avant 8h': 'cancelled before 8 am',
+  'Solde avant': 'Balance before', 'Solde après': 'Balance after',
   'Décevant': 'Disappointing', 'Moyen': 'Average', 'Bon': 'Good', 'Très bon': 'Very good', 'Excellent': 'Excellent',
   'Un mot pour la cuisine (facultatif)': 'A word for the kitchen (optional)',
   'Commentaire': 'Comment',
@@ -97,7 +101,6 @@ const EN: Record<string, string> = {
   'Votre créneau de retrait': 'Your pickup slot',
   'passé': 'past', 'complet': 'full', '{n} pl.': '{n} left',
   'Solde actuel': 'Current balance',
-  'Solde après': 'Balance after',
   'Annulable': 'Cancellable',
   'non (offre)': 'no (deal)',
   "jusqu'à 8h le {jour}": 'until 8am on {jour}',

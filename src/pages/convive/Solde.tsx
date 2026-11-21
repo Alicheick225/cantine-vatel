@@ -2,7 +2,8 @@ import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../auth/AuthProvider'
-import { dateHeure, fcfa, messageErreur } from '../../lib/format'
+import { dateHeure, fcfa, jourLong, messageErreur } from '../../lib/format'
+import { IconChevronDown } from '@tabler/icons-react'
 import { Alerte, BandeVatel, Bouton, Carte, Chargement } from '../../components/ui'
 import { useLangue } from '../../lib/i18n'
 
@@ -21,6 +22,49 @@ interface Transaction {
   moyen: string | null
   solde_apres: number
   cree_le: string
+  cree_par: string | null
+  reservation: { jour: string; code_court: string; est_offre: boolean; menu: { plat: { nom: string } | null } | null } | null
+}
+
+/** Une opération du solde, qui s'ouvre au toucher pour donner le détail. */
+function LigneOperation({ t, moi }: { t: Transaction; moi?: string }) {
+  const { t: tr } = useLangue()
+  const [ouvert, setOuvert] = useState(false)
+  const credit = t.type !== 'debit'
+  const avant = credit ? t.solde_apres - t.montant : t.solde_apres + t.montant
+  const ligne = (libelle: string, valeur: React.ReactNode) => (
+    <div className="flex justify-between gap-3"><dt className="text-encre-douce">{tr(libelle)}</dt><dd className="text-right">{valeur}</dd></div>
+  )
+  return (
+    <li className="py-2.5 text-sm">
+      <button onClick={() => setOuvert(!ouvert)} aria-expanded={ouvert} className="w-full flex justify-between gap-3 text-left items-center">
+        <div className="flex-1 min-w-0">
+          <p className="font-semibold">
+            {tr(LIBELLES[t.type])}{t.moyen ? ` · ${MOYENS.find((m) => m.id === t.moyen)?.nom ?? 'Simulé'}` : ''}
+            {t.reservation?.menu?.plat && <span className="font-normal text-encre-douce"> · {t.reservation.menu.plat.nom}</span>}
+          </p>
+          <p className="text-xs text-encre-douce">{dateHeure(t.cree_le)}</p>
+        </div>
+        <div className="text-right">
+          <p className={`font-mono font-bold ${credit ? 'text-valide' : 'text-encre'}`}>{credit ? '+' : '−'}{fcfa(t.montant)}</p>
+          <p className="text-xs text-encre-douce font-mono">{tr('solde {m}', { m: fcfa(t.solde_apres) })}</p>
+        </div>
+        <IconChevronDown size={18} className={`shrink-0 text-encre-douce transition-transform ${ouvert ? 'rotate-180' : ''}`} aria-hidden />
+      </button>
+      {ouvert && (
+        <dl className="mt-2 rounded-xl bg-fond p-3 space-y-1">
+          {ligne('Opération', <span className="font-mono">n° {t.id}</span>)}
+          {ligne('Date et heure', dateHeure(t.cree_le))}
+          {t.moyen && ligne('Moyen de paiement', <>{MOYENS.find((m) => m.id === t.moyen)?.nom}<span className="block text-xs text-encre-douce">{tr('paiement simulé (démonstration)')}</span></>)}
+          {t.type === 'recharge' && t.cree_par && moi && t.cree_par !== moi && ligne('Payée par', tr('votre parent'))}
+          {t.reservation && ligne('Repas', <>{t.reservation.menu?.plat?.nom}{t.reservation.est_offre ? ` · ${tr('offre anti-gaspi')}` : ''}<span className="block text-xs text-encre-douce first-letter:uppercase">{jourLong(t.reservation.jour)} · {t.reservation.code_court}</span></>)}
+          {t.type === 'remboursement' && ligne('Motif', tr('annulation avant 8h'))}
+          {ligne('Solde avant', <span className="font-mono">{fcfa(avant)}</span>)}
+          {ligne('Solde après', <span className="font-mono font-bold">{fcfa(t.solde_apres)}</span>)}
+        </dl>
+      )}
+    </li>
+  )
 }
 
 export default function Solde() {
@@ -36,11 +80,11 @@ export default function Solde() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('transactions')
-        .select('id, type, montant, moyen, solde_apres, cree_le')
+        .select('id, type, montant, moyen, solde_apres, cree_le, cree_par, reservation:reservations(jour, code_court, est_offre, menu:menus_jour(plat:plats(nom)))')
         .order('cree_le', { ascending: false })
         .limit(50)
       if (error) throw error
-      return data as Transaction[]
+      return data as unknown as Transaction[]
     },
   })
 
@@ -111,23 +155,7 @@ export default function Solde() {
           <h2 className="font-bold text-marine text-sm mb-1">{tr('Historique')}</h2>
           {isLoading && <Chargement />}
           <ul className="divide-y divide-ligne">
-            {historique?.map((t) => {
-              const credit = t.type !== 'debit'
-              return (
-                <li key={t.id} className="py-2.5 flex justify-between gap-3 text-sm">
-                  <div>
-                    <p className="font-semibold">
-                      {tr(LIBELLES[t.type])}{t.moyen ? ` · ${MOYENS.find((m) => m.id === t.moyen)?.nom ?? 'Simulé'}` : ''}
-                    </p>
-                    <p className="text-xs text-encre-douce">{dateHeure(t.cree_le)}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className={`font-mono font-bold ${credit ? 'text-valide' : 'text-encre'}`}>{credit ? '+' : '−'}{fcfa(t.montant)}</p>
-                    <p className="text-xs text-encre-douce font-mono">{tr('solde {m}', { m: fcfa(t.solde_apres) })}</p>
-                  </div>
-                </li>
-              )
-            })}
+            {historique?.map((t) => <LigneOperation key={t.id} t={t} moi={profil?.id} />)}
           </ul>
           {historique?.length === 0 && <p className="text-sm text-encre-douce">{tr("Aucune opération pour l'instant.")}</p>}
         </section>
