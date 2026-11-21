@@ -17,7 +17,12 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Merriweather:wght@700;900&family=Open+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@500&display=swap" />
   </head>
   <body>
-    <div id="root"></div>
+    <!-- Écran de chargement : affiché dès le premier octet, remplacé par l'application quand elle démarre. -->
+    <div id="root"><div style="min-height:100dvh;background:#072A5D;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;color:#fff;font-family:Georgia,serif">
+      <svg width="96" height="96" viewBox="0 0 130 130" aria-hidden="true" style="animation:pulse 1.4s ease-in-out infinite"><circle cx="65" cy="41" r="7" fill="#F59439"/><path d="M25 85 a40 40 0 0 1 80 0z" fill="#fff"/><rect x="18" y="88" width="94" height="8" rx="4" fill="#67B2E8"/><path d="M50 52 L65 75 L80 52" fill="none" stroke="#072A5D" stroke-width="7" stroke-linejoin="round" stroke-linecap="round"/></svg>
+      <p style="margin:0;font-weight:900;font-size:22px;letter-spacing:.3px">Cantine Vatel</p>
+      <style>@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}@media (prefers-reduced-motion:reduce){svg{animation:none!important}}</style>
+    </div></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

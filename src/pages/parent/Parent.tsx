@@ -98,7 +98,7 @@ export default function Parent() {
     <div className="min-h-dvh max-w-lg mx-auto bg-white">
       <header className="bg-marine text-white px-5 pt-6 pb-5 flex justify-between items-start">
         <div>
-          <p className="text-sm opacity-85">Akwaba {profil?.nom.split(' ')[0]}</p>
+          <p className="text-sm opacity-85">{t('Bienvenue {prenom}', { prenom: profil?.nom.split(' ')[0] ?? '' })}</p>
           <h1 className="font-titre font-black text-2xl">{t('Espace parent')}</h1>
         </div>
         <div className="flex flex-col items-end gap-2"><ChoixLangue /><button onClick={deconnexion} className="text-xs underline opacity-85">{t('Se déconnecter')}</button></div>

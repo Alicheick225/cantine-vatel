@@ -6,7 +6,7 @@ import { messageErreur } from '../lib/format'
 import type { Allergene, Categorie } from '../lib/types'
 import { Alerte, Bouton, Champ } from '../components/ui'
 import ChoixAllergies from '../components/ChoixAllergies'
-import { EnTetePublic } from './Connexion'
+import { PagePublique } from './Connexion'
 import { useLangue } from '../lib/i18n'
 
 export default function Inscription() {
@@ -42,9 +42,8 @@ export default function Inscription() {
   }
 
   return (
-    <div className="min-h-dvh max-w-lg mx-auto bg-white">
-      <EnTetePublic />
-      <form onSubmit={soumettre} className="p-6 space-y-4">
+    <PagePublique>
+      <form onSubmit={soumettre} className="space-y-4">
         <h2 className="font-titre font-black text-xl text-marine">{t('Créer un compte')}</h2>
         <Champ label={t('Nom complet')} required minLength={2} maxLength={80} value={nom} onChange={(e) => setNom(e.target.value)} />
         <Champ label={t('Email')} type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
@@ -82,6 +81,6 @@ export default function Inscription() {
           {t('Déjà inscrit(e) ?')} <Link to="/connexion" className="text-marine font-semibold underline">{t('Se connecter')}</Link>
         </p>
       </form>
-    </div>
+    </PagePublique>
   )
 }

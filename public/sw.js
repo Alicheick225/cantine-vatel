@@ -2,7 +2,7 @@
 // En ligne, on sert toujours la version la plus récente (jamais d'ancienne version pendant une démo) ;
 // hors ligne, on sert la dernière copie gardée de l'application, pour afficher le ticket.
 // Les appels à Supabase (autre domaine) ne sont jamais mis en cache.
-const CACHE = 'cantine-vatel-v1'
+const CACHE = 'cantine-vatel-v2'
 
 self.addEventListener('install', () => self.skipWaiting())
 self.addEventListener('activate', (e) => {

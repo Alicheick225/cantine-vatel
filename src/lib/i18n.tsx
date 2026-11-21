@@ -9,7 +9,20 @@ export type Langue = 'fr' | 'en'
 
 const EN: Record<string, string> = {
   // Accueil, connexion, inscription
-  'Akwaba': 'Akwaba (welcome)',
+  'Bienvenue {prenom}': 'Welcome {prenom}',
+  'Le menu de la semaine, réservé en quelques secondes': "This week's menu, booked in seconds",
+  'Un ticket QR : vous retirez votre plat sans attendre': 'A QR ticket: pick up your meal without queuing',
+  'Moins de file, moins de gaspillage': 'Shorter queues, less food waste',
+  "Installez l'application": 'Install the app',
+  'Une icône sur votre téléphone, comme une vraie application : plus rapide, et votre ticket reste disponible hors ligne.': 'An icon on your phone, just like a real app: faster, and your ticket stays available offline.',
+  'Installer en un geste': 'Install in one tap',
+  'Votre téléphone': 'Your phone',
+  'Ouvrez ce site dans Safari.': 'Open this site in Safari.',
+  "Touchez le bouton Partager, en bas de l'écran.": 'Tap the Share button at the bottom of the screen.',
+  "Choisissez « Sur l'écran d'accueil », puis « Ajouter ».": 'Choose "Add to Home Screen", then "Add".',
+  'Ouvrez ce site dans Chrome.': 'Open this site in Chrome.',
+  'Touchez le menu ⋮ en haut à droite.': 'Tap the ⋮ menu at the top right.',
+  "Choisissez « Installer l'application » ou « Ajouter à l'écran d'accueil ».": 'Choose "Install app" or "Add to Home screen".',
   'Réservez votre repas, retirez-le sans attendre.': 'Book your meal, pick it up without queuing.',
   'Connexion': 'Sign in',
   'Email': 'Email',

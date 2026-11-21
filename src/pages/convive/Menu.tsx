@@ -75,7 +75,7 @@ export default function Menu() {
     <div>
       <header className="bg-marine text-white px-5 pt-6 pb-5">
         <div className="flex items-center justify-between">
-          <p className="text-sm opacity-85">Akwaba {prenom}</p>
+          <p className="text-sm opacity-85">{t('Bienvenue {prenom}', { prenom: prenom ?? '' })}</p>
           <Link to="/solde" className="rounded-full bg-action text-marine font-mono font-bold text-sm px-3 py-1">
             {fcfa(profil?.solde ?? 0)}
           </Link>
