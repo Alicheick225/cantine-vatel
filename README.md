@@ -27,6 +27,10 @@ Dans une cantine, la cuisine découvre la demande au moment du service. Elle pr�
 - Notation des repas servis, suggestion anti-gaspillage, rappel du créneau, offre de fin de service en temps réel.
 - Profil : allergies et régime végétarien.
 
+**Parent d'élève**
+- Liaison avec son enfant par un **code de liaison** (valable 48 h, à usage unique) que l'enfant génère depuis son profil.
+- Solde de l'enfant, alerte de solde bas, **recharge** (Wave ou Orange Money, simulée), derniers repas (mangé, réservé, absent).
+
 **Administrateur, sur ordinateur et tablette**
 - **Aujourd'hui** : chiffres clés, commandes par plat **en direct**, affluence par créneau, suggestion anti-gaspillage et lancement d'une offre de fin de service.
 - **Comptoir** (tablette, plein écran) : scan du QR par caméra ou saisie du code court, puis écran **vert ou rouge**.
@@ -40,7 +44,7 @@ Dans une cantine, la cuisine découvre la demande au moment du service. Elle pr�
 |---|---|---|
 | Convive (étudiant) | `etudiant.test@cantine-vatel.test` | `VatelJury2026` |
 
-Vous pouvez aussi **créer votre propre compte** convive depuis la page d'inscription. Le compte **administrateur** est transmis séparément, dans le formulaire de soumission : par sécurité, personne ne peut s'inscrire en admin.
+Vous pouvez aussi **créer votre propre compte** depuis la page d'inscription, en tant qu'étudiant, membre du personnel ou parent. Pour tester l'espace parent : créez un compte parent, puis saisissez le code généré dans « Profil > Lier un parent » du compte étudiant. Le compte **administrateur** est transmis séparément, dans le formulaire de soumission : par sécurité, personne ne peut s'inscrire en admin.
 
 > Les menus sont publiés du lundi au vendredi. Les réservations d'un jour ferment à 8h ce jour-là : essayez de réserver pour un jour à venir.
 
@@ -77,9 +81,10 @@ Tablette (comptoir) ─┘                                            ├─ Aut
 
 **Tests automatiques** (exécutés dans une transaction annulée, ils ne laissent aucune trace) :
 - `supabase/tests/securite.sql` : 12 tests (inscription en admin impossible, lecture des données d'autrui, modification du solde ou du rôle, écriture directe d'une transaction, immuabilité du journal…) ;
-- `supabase/tests/metier.sql` : 13 tests (recharge, réservation, limite de 8h, un repas par jour, annulation remboursée, scan vert puis rouge, cohérence solde / transactions…).
+- `supabase/tests/metier.sql` : 13 tests (recharge, réservation, limite de 8h, un repas par jour, annulation remboursée, scan vert puis rouge, cohérence solde / transactions…) ;
+- `supabase/tests/parent.sql` : 10 tests (liaison par code, le parent ne voit que son enfant, recharge tracée, refus d'un code invalide journalisé…).
 
-**Résultat : 25 tests sur 25 réussis.** S'y ajoute l'analyse de sécurité de Supabase (`supabase db advisors`). Les seuls avertissements restants concernent les fonctions métier, volontairement ouvertes aux utilisateurs connectés et qui contrôlent elles-mêmes le rôle, ainsi qu'une option d'authentification réservée aux offres payantes.
+**Résultat : 35 tests sur 35 réussis.** S'y ajoute l'analyse de sécurité de Supabase (`supabase db advisors`). Les seuls avertissements restants concernent les fonctions métier, volontairement ouvertes aux utilisateurs connectés et qui contrôlent elles-mêmes le rôle, ainsi qu'une option d'authentification réservée aux offres payantes.
 
 ## Prévision : comment elle fonctionne
 
@@ -106,6 +111,7 @@ supabase db query --remote -f supabase/seed.sql             # créneaux, plats, 
 supabase db query --remote -f supabase/demo/historique.sql  # historique de démo
 supabase db query --remote -f supabase/tests/securite.sql   # tests de sécurité
 supabase db query --remote -f supabase/tests/metier.sql     # tests métier
+supabase db query --remote -f supabase/tests/parent.sql     # tests de l'espace parent
 ```
 
 ## Organisation du dépôt
@@ -114,14 +120,14 @@ supabase db query --remote -f supabase/tests/metier.sql     # tests métier
 src/
   auth/        session et redirection selon le rôle
   layouts/     convive (barre en bas), admin (menu latéral)
-  pages/       convive/ (menu, réservation, tickets, solde, profil) et admin/ (aujourd'hui, comptoir, menus, plats, prévision, journal)
+  pages/       convive/ (menu, réservation, tickets, solde, profil), parent/ et admin/ (aujourd'hui, comptoir, menus, plats, prévision, journal)
   components/  éléments d'interface (ticket, plat, boutons…)
   lib/         client Supabase, accès aux données, temps réel, formats
 supabase/
   migrations/  schéma, sécurité, fonctions métier, tableau de bord, prévision (SQL versionné)
   seed.sql     données de référence
   demo/        historique de démo et historique simulé (6 semaines, 150 convives fictifs)
-  tests/       tests de sécurité et tests métier
+  tests/       tests de sécurité, tests métier et tests de l'espace parent
 ```
 
 ## Ce qui est simulé (et comment le rendre réel)

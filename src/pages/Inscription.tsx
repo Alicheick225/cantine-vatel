@@ -14,7 +14,7 @@ export default function Inscription() {
   const [nom, setNom] = useState('')
   const [email, setEmail] = useState('')
   const [mdp, setMdp] = useState('')
-  const [categorie, setCategorie] = useState<Categorie>('etudiant')
+  const [categorie, setCategorie] = useState<Categorie | 'parent'>('etudiant')
   const [allergies, setAllergies] = useState<Allergene[]>([])
   const [vegetarien, setVegetarien] = useState(false)
   const [erreur, setErreur] = useState<string | null>(null)
@@ -28,15 +28,15 @@ export default function Inscription() {
     const { data, error } = await supabase.auth.signUp({
       email: email.trim(),
       password: mdp,
-      options: { data: { nom: nom.trim(), categorie } },
+      options: { data: categorie === 'parent' ? { nom: nom.trim(), role: 'parent' } : { nom: nom.trim(), categorie } },
     })
-    if (!error && data.user && (allergies.length || vegetarien)) {
+    if (!error && data.user && categorie !== 'parent' && (allergies.length || vegetarien)) {
       await supabase.from('profils').update({ allergies, vegetarien }).eq('id', data.user.id)
       qc.invalidateQueries({ queryKey: ['profil'] })
     }
     setEnvoi(false)
     if (error) return setErreur(messageErreur(error))
-    navigate('/', { replace: true })
+    navigate(categorie === 'parent' ? '/parent' : '/', { replace: true })
   }
 
   return (
@@ -49,8 +49,8 @@ export default function Inscription() {
         <Champ label="Mot de passe (6 caractères minimum)" type="password" autoComplete="new-password" required minLength={6} value={mdp} onChange={(e) => setMdp(e.target.value)} />
         <fieldset>
           <legend className="text-sm font-semibold text-marine">Vous êtes</legend>
-          <div className="mt-2 grid grid-cols-2 gap-2">
-            {(['etudiant', 'personnel'] as const).map((c) => (
+          <div className="mt-2 grid grid-cols-3 gap-2">
+            {(['etudiant', 'personnel', 'parent'] as const).map((c) => (
               <button
                 type="button"
                 key={c}
@@ -58,16 +58,22 @@ export default function Inscription() {
                 onClick={() => setCategorie(c)}
                 className={`rounded-xl border px-3 py-2.5 text-sm font-semibold ${categorie === c ? 'bg-ciel-clair border-ciel text-marine' : 'bg-white border-ligne text-encre-douce'}`}
               >
-                {c === 'etudiant' ? 'Étudiant(e)' : 'Membre du personnel'}
+                {c === 'etudiant' ? 'Étudiant(e)' : c === 'personnel' ? 'Personnel' : "Parent d'élève"}
               </button>
             ))}
           </div>
         </fieldset>
-        <ChoixAllergies valeur={allergies} onChange={setAllergies} />
-        <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" checked={vegetarien} onChange={(e) => setVegetarien(e.target.checked)} className="size-4 accent-marine" />
-          Je suis végétarien(ne)
-        </label>
+        {categorie === 'parent' ? (
+          <p className="text-xs text-encre-douce">Après inscription, saisissez le code de liaison que votre enfant génère depuis son profil.</p>
+        ) : (
+          <>
+            <ChoixAllergies valeur={allergies} onChange={setAllergies} />
+            <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" checked={vegetarien} onChange={(e) => setVegetarien(e.target.checked)} className="size-4 accent-marine" />
+              Je suis végétarien(ne)
+            </label>
+          </>
+        )}
         {erreur && <Alerte>{erreur}</Alerte>}
         <Bouton type="submit" className="w-full" disabled={envoi}>{envoi ? 'Création…' : 'Créer mon compte'}</Bouton>
         <p className="text-sm text-center text-encre-douce">

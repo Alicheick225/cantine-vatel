@@ -15,6 +15,7 @@ import Menus from './pages/admin/Menus'
 import Plats from './pages/admin/Plats'
 import Prevision from './pages/admin/Prevision'
 import Journal from './pages/admin/Journal'
+import Parent from './pages/parent/Parent'
 
 export default function App() {
   return (
@@ -31,6 +32,11 @@ export default function App() {
           <Route path="/solde" element={<Solde />} />
           <Route path="/profil" element={<Profil />} />
         </Route>
+      </Route>
+
+      {/* Parent */}
+      <Route element={<Garde roles={['parent']} />}>
+        <Route path="/parent" element={<Parent />} />
       </Route>
 
       {/* Administrateur */}

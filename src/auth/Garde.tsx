@@ -4,7 +4,7 @@ import { Chargement } from '../components/ui'
 import type { Role } from '../lib/types'
 
 /** Page d'accueil selon le rôle (confort d'interface : la vraie protection est dans la base). */
-export const accueilDuRole = (role: Role | undefined) => (role === 'admin' ? '/admin' : '/')
+export const accueilDuRole = (role: Role | undefined) => (role === 'admin' ? '/admin' : role === 'parent' ? '/parent' : '/')
 
 export function Garde({ roles }: { roles: Role[] }) {
   const { session, profil, chargement } = useAuth()

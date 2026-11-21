@@ -62,11 +62,38 @@ function FormulaireProfil({ profil, enregistre, onEnregistre }: { profil: TProfi
             Enregistrer
           </Bouton>
         </Carte>
+        <CodeParent />
         <p className="text-xs text-encre-douce">
           Vos allergies sont signalées sur les plats concernés et affichées au comptoir au moment du service.
         </p>
         <Bouton variante="contour" className="w-full" onClick={deconnexion}>Se déconnecter</Bouton>
       </div>
     </div>
+  )
+}
+
+/** L'élève génère un code (48 h) que son parent saisit pour suivre ses repas et recharger son compte. */
+function CodeParent() {
+  const generer = useMutation({
+    mutationFn: async () => {
+      const { data, error } = await supabase.rpc('generer_code_liaison')
+      if (error) throw error
+      return data as { code: string; expire_le: string }
+    },
+  })
+  return (
+    <Carte className="space-y-2">
+      <h2 className="font-bold text-marine text-sm">Lier un parent</h2>
+      <p className="text-xs text-encre-douce">Votre parent pourra recharger votre compte et voir vos repas.</p>
+      {generer.data ? (
+        <p className="text-sm">
+          Code à lui communiquer : <b className="font-mono text-lg tracking-widest text-marine">{generer.data.code}</b>
+          <span className="block text-xs text-encre-douce">Valable 48 h, utilisable une seule fois.</span>
+        </p>
+      ) : (
+        <Bouton variante="contour" className="w-full" disabled={generer.isPending} onClick={() => generer.mutate()}>Générer un code de liaison</Bouton>
+      )}
+      {generer.isError && <Alerte>{messageErreur(generer.error)}</Alerte>}
+    </Carte>
   )
 }
