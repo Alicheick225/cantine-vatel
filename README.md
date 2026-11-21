@@ -43,15 +43,70 @@ Dans une cantine, la cuisine découvre la demande au moment du service. Elle pr�
 - **Prévision** des repas, bouton « Appliquer au menu », suivi du **gaspillage** sur 6 semaines.
 - **Journal d'audit** : qui, quoi, quand, comment, où.
 
-## Comptes de test
+## Tester l'application
 
-| Rôle | Email | Mot de passe |
-|---|---|---|
-| Convive (étudiant) | `etudiant.test@cantine-vatel.test` | `VatelJury2026` |
+### En ligne (aucune installation)
 
-Vous pouvez aussi **créer votre propre compte** depuis la page d'inscription, en tant qu'étudiant, membre du personnel ou parent. Pour tester l'espace parent : créez un compte parent, puis saisissez le code généré dans « Profil > Lier un parent » du compte étudiant. Le compte **administrateur** est transmis séparément, dans le formulaire de soumission : par sécurité, personne ne peut s'inscrire en admin.
+Ouvrez **https://cantine-vatel.vercel.app**, sur téléphone de préférence. L'application s'installe sur l'écran d'accueil : la page de connexion explique comment faire sur iPhone et sur Android.
 
-> Les menus sont publiés du lundi au vendredi. Les réservations d'un jour ferment à 8h ce jour-là : essayez de réserver pour un jour à venir.
+| Rôle | Email | Mot de passe | Ce qu'on peut tester |
+|---|---|---|---|
+| Convive (étudiant) | `etudiant.test@cantine-vatel.test` | `VatelJury2026` | Menu, réservation, ticket QR, annulation, solde et recharge, historique, notation, profil (allergies, langue, notifications) |
+| Administrateur, scanneuse, serveuse | transmis séparément | | Tableau de bord, menus, plats, prévision, rapports, équipe, journal ; comptoir (scan) ; écran du passe |
+
+Vous pouvez aussi **créer votre propre compte** depuis la page d'inscription : étudiant, personnel ou parent. Personne ne peut s'inscrire en administrateur.
+
+**Parcours conseillés :**
+1. **Réserver :** en convive, choisissez un plat d'un jour à venir, puis un créneau. Le ticket QR apparaît dans « Tickets ». Les réservations d'un jour ferment à 8h ce jour-là.
+2. **Scanner :** en scanneuse ou en admin, ouvrez le comptoir et scannez le QR (ou tapez les 4 chiffres du code). Le ticket du jour donne un écran **vert** ; scanné une deuxième fois, il donne un écran **rouge**. Des tickets de test couvrant chaque cas peuvent être créés avec `supabase/demo/tickets_scan.sql`.
+3. **Espace parent :**
+   - créez un compte parent ;
+   - dans le compte étudiant, ouvrez « Profil > Lier un parent » pour générer un code ;
+   - saisissez ce code dans l'espace parent : vous pouvez recharger le compte et suivre les repas.
+4. **Notifications :** dans « Profil », activez les notifications puis touchez « M'envoyer une notification de test » et fermez l'application : la notification arrive quelques secondes plus tard. Sur iPhone, il faut d'abord installer l'application sur l'écran d'accueil (iOS 16.4 ou plus).
+
+### En local, sur la base en ligne (2 minutes)
+
+Il faut Node.js 20 ou plus.
+
+```bash
+git clone https://github.com/Alicheick225/cantine-vatel.git
+cd cantine-vatel
+npm install
+cat > .env.local <<'ENV'
+VITE_SUPABASE_URL=https://kpkbovgolgndcwiwpkhi.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_79FSMGxq5muij3vpHO2QfA_vBr_vO_a
+ENV
+npm run dev            # http://localhost:5173, mêmes comptes que la version en ligne
+```
+
+La clé « publishable » est publique par nature : elle est déjà présente dans l'application en ligne. Toutes les données restent protégées par les règles d'accès de la base (RLS). Pour tester la version de production en local (service worker, mode hors ligne, notifications push) : `npm run build && npm run preview`.
+
+### En local, avec votre propre base Supabase
+
+Il faut un compte Supabase et la [Supabase CLI](https://supabase.com/docs/guides/cli).
+
+```bash
+supabase link --project-ref <ref-de-votre-projet>
+supabase db push                                             # toutes les migrations (supabase/migrations)
+supabase db query --remote -f supabase/seed.sql              # créneaux, plats, menus
+supabase db query --remote -f supabase/demo/historique.sql   # historique de démo
+supabase functions deploy push --no-verify-jwt               # envoi des notifications push
+```
+
+Ensuite :
+1. Renseignez `.env.local` avec l'URL et la clé publishable de votre projet.
+2. Créez un compte depuis l'application, puis nommez-le administrateur dans l'éditeur SQL de Supabase : `update public.profils set role = 'admin', categorie = null where email = 'vous@exemple.ci';`
+3. Pour les notifications push, voir la section « Notifications push ».
+
+**Tests automatisés de la base** (chaque fichier s'exécute dans une transaction annulée : aucune trace dans la base) :
+
+```bash
+supabase db query --remote -f supabase/tests/securite.sql   # sécurité
+supabase db query --remote -f supabase/tests/metier.sql     # règles métier
+supabase db query --remote -f supabase/tests/parent.sql     # espace parent
+supabase db query --remote -f supabase/tests/equipe.sql     # rôles d'équipe
+```
 
 ## Architecture
 
@@ -100,28 +155,6 @@ Tablette (comptoir) ─┘                                            ├─ Aut
 
 C'est une statistique simple et **explicable au chef de cuisine**. Avec de vraies données sur plusieurs mois, on passerait à un modèle de séries temporelles.
 
-## Lancer le projet en local
-
-```bash
-npm install
-cp .env.example .env.local   # URL et clé publique (publishable) du projet Supabase
-npm run dev
-```
-
-Base de données (Supabase CLI) :
-
-```bash
-supabase link --project-ref <ref>
-supabase db push                                            # migrations (supabase/migrations)
-supabase db query --remote -f supabase/seed.sql             # créneaux, plats, menus
-supabase db query --remote -f supabase/demo/historique.sql  # historique de démo
-supabase db query --remote -f supabase/tests/securite.sql   # tests de sécurité
-supabase db query --remote -f supabase/tests/metier.sql     # tests métier
-supabase db query --remote -f supabase/tests/parent.sql     # tests de l'espace parent
-supabase db query --remote -f supabase/tests/equipe.sql     # tests des rôles d'équipe
-supabase db query --remote -f supabase/demo/tickets_scan.sql # 7 tickets de test du comptoir (VTL-9101 à 9107), relançable
-```
-
 ## Organisation du dépôt
 
 ```
@@ -145,10 +178,6 @@ supabase/
 | Paiement Wave et Orange Money | Fonction serveur Supabase qui crée le paiement chez l'opérateur et reçoit sa confirmation |
 | 6 semaines d'historique (150 convives fictifs, sans mot de passe) | La prévision se nourrit des vraies réservations |
 | Confirmation de l'email désactivée | À réactiver, avec un serveur d'envoi dédié |
-
-## Utilisation de l'IA
-
-L'IA était autorisée par le règlement. **Ali Ouattara** a conçu le projet : choix du problème, parcours, modèle de données, règles métier et de sécurité (DICT), prévision et charte graphique. L'interface et le SQL ont été écrits avec **Claude Code** sous sa direction, en petites étapes testées et validées, avec un commit par fonctionnalité. Les règles critiques sont dans la base, testées automatiquement, et peuvent être montrées en direct.
 
 ## Crédits
 
