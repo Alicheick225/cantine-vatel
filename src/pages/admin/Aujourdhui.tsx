@@ -1,5 +1,7 @@
 import { useState } from 'react'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { Link } from 'react-router-dom'
+import { IconAlertTriangle } from '@tabler/icons-react'
 import { supabase } from '../../lib/supabase'
 import { useTableauBord, type LignePlat } from '../../lib/donnees'
 import { useTempsReel } from '../../lib/temps-reel'
@@ -42,6 +44,21 @@ export default function Aujourdhui() {
     : undefined
   const maxCreneau = Math.max(1, ...(tb?.creneaux ?? []).map((c) => c.reservees))
 
+  // Éviter les ruptures : plats des 7 prochains jours dont la demande prévue dépasse les portions prévues,
+  // et plats du jour presque épuisés.
+  const { data: ruptures } = useQuery({
+    queryKey: ['ruptures'],
+    queryFn: async () => {
+      const auj = aujourdhui()
+      const { data, error } = await supabase.rpc('prevision', { p_debut: ajouterJours(auj, 1), p_fin: ajouterJours(auj, 7) })
+      if (error) throw error
+      return (data as { jour: string; menu_jour_id: number; plat: string; attendus: number; portions_prevues: number }[])
+        .filter((l) => l.attendus > l.portions_prevues)
+        .sort((a, b) => a.jour.localeCompare(b.jour))
+    },
+  })
+  const presqueEpuises = estAujourdhui ? plats.filter((p) => restantes(p) > 0 && restantes(p) <= 5) : []
+
   return (
     <div className="space-y-4 max-w-6xl">
       <div className="flex flex-wrap items-end justify-between gap-3">
@@ -73,6 +90,25 @@ export default function Aujourdhui() {
           </div>
 
           {offre.isError && <Alerte>{messageErreur(offre.error)}</Alerte>}
+
+          {((ruptures?.length ?? 0) > 0 || presqueEpuises.length > 0) && (
+            <Carte className="!bg-rare border-rare-texte/20">
+              <p className="font-bold text-rare-texte flex items-center gap-1.5"><IconAlertTriangle size={18} aria-hidden /> Risques de rupture</p>
+              <ul className="text-sm mt-1 space-y-0.5">
+                {presqueEpuises.map((p) => (
+                  <li key={p.menu_jour_id}>Aujourd'hui : <b>{p.nom}</b>, plus que {restantes(p)} portion{restantes(p) > 1 ? 's' : ''}.</li>
+                ))}
+                {ruptures?.slice(0, 6).map((r) => (
+                  <li key={r.menu_jour_id} className="first-letter:uppercase">
+                    {jourLong(r.jour)} : <b>{r.plat}</b>, {r.attendus} attendus pour {r.portions_prevues} portions prévues (+{r.attendus - r.portions_prevues}).
+                  </li>
+                ))}
+              </ul>
+              {(ruptures?.length ?? 0) > 0 && (
+                <Link to="/admin/prevision" className="inline-block mt-2 text-sm font-semibold text-marine underline">Ajuster avec la prévision →</Link>
+              )}
+            </Carte>
+          )}
 
           {suggestion && (
             <Carte className="!bg-valide-clair border-valide/30">
