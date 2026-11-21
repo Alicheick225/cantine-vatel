@@ -4,23 +4,83 @@ import type { Ticket } from './donnees'
 import { aujourdhui, fcfa } from './format'
 
 /**
- * Notifications du téléphone (bonus « notifications en temps réel »), sans serveur :
- *  - offre de fin de service lancée par la cuisine (reçue en direct par Supabase Realtime) ;
- *  - rappel 10 minutes avant le créneau du ticket du jour.
- * Elles fonctionnent tant que l'application est ouverte, même en arrière-plan.
- * Les vraies notifications push, application fermée, demandent un serveur (améliorations B3).
+ * Notifications (bonus « notifications push en temps réel »).
+ *  1. Push, même application fermée : l'appareil s'abonne au service push du navigateur (clé VAPID publique),
+ *     l'abonnement est enregistré dans la base, et la fonction serveur « push » envoie :
+ *     offre anti-gaspi lancée, rappel 10 minutes avant le créneau, solde bas de l'enfant (parent), test.
+ *  2. Sans push (navigateur trop ancien) : notifications locales tant que l'application est ouverte.
  */
+// Clé publique VAPID : publique par nature, la clé privée reste un secret côté Supabase.
+const CLE_VAPID = 'BA9KxfMMCCgI17F7pQUJj3lZ1H0TT-xU7mTvSkMwmuqDSx05KehR3aMwKxIQoayORJ0naAiddB8YzCmVDcgJXYE'
+
 export const notificationsDisponibles = () => typeof window !== 'undefined' && 'Notification' in window
+
+export const pushDisponible = () =>
+  notificationsDisponibles() && 'serviceWorker' in navigator && 'PushManager' in window
 
 export const notificationsActives = () => notificationsDisponibles() && Notification.permission === 'granted'
 
-export async function activerNotifications() {
-  if (!notificationsDisponibles()) return false
-  return (await Notification.requestPermission()) === 'granted'
+const versOctets = (b64: string) => {
+  const brut = atob((b64 + '='.repeat((4 - (b64.length % 4)) % 4)).replace(/-/g, '+').replace(/_/g, '/'))
+  return Uint8Array.from(brut, (c) => c.charCodeAt(0))
 }
 
+async function enregistrement() {
+  return (await navigator.serviceWorker.getRegistration()) ?? (await navigator.serviceWorker.register('/sw.js'))
+}
+
+/** Abonnement push de cet appareil (null s'il n'est pas abonné). */
+export async function abonnementActuel() {
+  if (!pushDisponible()) return null
+  const r = await navigator.serviceWorker.getRegistration()
+  return (await r?.pushManager.getSubscription()) ?? null
+}
+
+/** Demande l'autorisation, abonne l'appareil au push et l'enregistre dans la base. */
+export async function activerNotifications() {
+  if (!notificationsDisponibles()) return false
+  if ((await Notification.requestPermission()) !== 'granted') return false
+  if (!pushDisponible()) return true // repli : notifications locales, application ouverte
+  const r = await enregistrement()
+  await navigator.serviceWorker.ready
+  const abo = (await r.pushManager.getSubscription())
+    ?? (await r.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: versOctets(CLE_VAPID) }))
+  const json = abo.toJSON()
+  const { error } = await supabase.rpc('enregistrer_abonnement', {
+    p_endpoint: abo.endpoint, p_p256dh: json.keys?.p256dh, p_auth: json.keys?.auth, p_appareil: navigator.userAgent,
+  })
+  if (error) throw error
+  try { localStorage.setItem('push-actif', '1') } catch { /* stockage indisponible */ }
+  return true
+}
+
+/** Désabonne cet appareil (dans le navigateur et dans la base). */
+export async function desactiverNotifications() {
+  const abo = await abonnementActuel()
+  if (abo) {
+    await supabase.rpc('supprimer_abonnement', { p_endpoint: abo.endpoint })
+    await abo.unsubscribe()
+  }
+  try { localStorage.removeItem('push-actif') } catch { /* stockage indisponible */ }
+}
+
+/** Demande au serveur une notification de test, envoyée 8 secondes plus tard (le temps de fermer l'application). */
+export async function envoyerNotificationTest() {
+  const { data, error } = await supabase.functions.invoke('push', { body: { type: 'test' } })
+  if (error) throw error
+  return data as { envoyes: number; echecs: number }
+}
+
+/** Prévenir les convives d'une offre anti-gaspi (appelé par l'admin après lancer_offre). */
+export async function annoncerOffre(menuJourId: number) {
+  await supabase.functions.invoke('push', { body: { type: 'offre', menu_jour_id: menuJourId } })
+}
+
+// Si l'appareil reçoit le push, les notifications locales feraient doublon.
+const pushActif = () => { try { return localStorage.getItem('push-actif') === '1' } catch { return false } }
+
 function notifier(titre: string, corps: string, cle: string) {
-  if (!notificationsActives()) return
+  if (!notificationsActives() || pushActif()) return
   try {
     new Notification(titre, { body: corps, icon: '/icone-192.png', tag: cle })
   } catch {

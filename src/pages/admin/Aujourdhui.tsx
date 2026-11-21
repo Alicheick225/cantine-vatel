@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { IconAlertTriangle } from '@tabler/icons-react'
 import { supabase } from '../../lib/supabase'
+import { annoncerOffre } from '../../lib/notifications'
 import { useTableauBord, type LignePlat } from '../../lib/donnees'
 import { useTempsReel } from '../../lib/temps-reel'
 import { ajouterJours, aujourdhui, fcfa, heure, jourLong, messageErreur } from '../../lib/format'
@@ -34,6 +35,8 @@ export default function Aujourdhui() {
       const fin = new Date(Date.now() + 45 * 60_000).toISOString()
       const { error } = await supabase.rpc('lancer_offre', { p_menu_jour: p.menu_jour_id, p_prix: prixOffre(p.prix), p_fin: fin })
       if (error) throw error
+      // Les convives abonnés reçoivent l'offre, même application fermée.
+      annoncerOffre(p.menu_jour_id).catch(() => {})
     },
     onSuccess: () => qc.invalidateQueries(),
   })

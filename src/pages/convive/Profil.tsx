@@ -7,7 +7,7 @@ import type { Allergene, Profil as TProfil } from '../../lib/types'
 import { Alerte, BandeVatel, Bouton, Carte, Champ } from '../../components/ui'
 import ChoixAllergies from '../../components/ChoixAllergies'
 import { ChoixLangue, useLangue } from '../../lib/i18n'
-import { activerNotifications, notificationsActives, notificationsDisponibles } from '../../lib/notifications'
+import CarteNotifications from '../../components/CarteNotifications'
 
 export default function Profil() {
   const { profil } = useAuth()
@@ -65,7 +65,7 @@ function FormulaireProfil({ profil, enregistre, onEnregistre }: { profil: TProfi
             {tr('Enregistrer')}
           </Bouton>
         </Carte>
-        <Notifications />
+        <CarteNotifications texte="Soyez prévenu(e) des offres anti-gaspillage et 10 minutes avant votre créneau." />
         <CodeParent />
         <p className="text-xs text-encre-douce">
           {tr('Vos allergies sont signalées sur les plats concernés et affichées au comptoir au moment du service.')}
@@ -103,21 +103,3 @@ function CodeParent() {
   )
 }
 
-function Notifications() {
-  const { t: tr } = useLangue()
-  const [actives, setActives] = useState(notificationsActives())
-  if (!notificationsDisponibles()) return null
-  return (
-    <Carte className="space-y-2">
-      <h2 className="font-bold text-marine text-sm">{tr('Notifications')}</h2>
-      <p className="text-xs text-encre-douce">{tr('Soyez prévenu(e) des offres anti-gaspillage et 10 minutes avant votre créneau.')}</p>
-      {actives ? (
-        <Alerte type="succes">{tr('Notifications activées.')}</Alerte>
-      ) : (
-        <Bouton variante="contour" className="w-full" onClick={async () => setActives(await activerNotifications())}>
-          {tr('Activer les notifications')}
-        </Bouton>
-      )}
-    </Carte>
-  )
-}

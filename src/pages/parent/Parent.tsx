@@ -6,6 +6,7 @@ import { fcfa, jourLong, messageErreur } from '../../lib/format'
 import { Alerte, BandeVatel, Bouton, Carte, Champ, Chargement } from '../../components/ui'
 import { Photo } from '../../components/Plat'
 import { ChoixLangue, useLangue } from '../../lib/i18n'
+import CarteNotifications from '../../components/CarteNotifications'
 
 interface Enfant { id: string; nom: string; solde: number; allergies: string[] }
 interface Repas { id: number; jour: string; statut: string; utilisateur_id: string; menu: { plat: { nom: string; photo_url: string | null } | null } | null }
@@ -134,6 +135,7 @@ export default function Parent() {
             </Carte>
           )
         })}
+        <CarteNotifications texte="Soyez prévenu(e) quand le solde de votre enfant devient bas." />
         <Carte>
           <form onSubmit={soumettre} className="space-y-2">
             <h2 className="font-bold text-marine">{t('Lier un enfant')}</h2>

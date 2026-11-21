@@ -155,6 +155,13 @@ const EN: Record<string, string> = {
   'Notifications': 'Notifications',
   'Soyez prévenu(e) des offres anti-gaspillage et 10 minutes avant votre créneau.': 'Get notified of anti-waste deals and 10 minutes before your pickup slot.',
   'Notifications activées.': 'Notifications enabled.',
+  'Notifications activées sur cet appareil, même application fermée.': 'Notifications are on for this device, even when the app is closed.',
+  "Envoi dans quelques secondes : vous pouvez fermer l'application.": 'Sending in a few seconds: you can close the app.',
+  "Aucun appareil n'a reçu la notification. Réactivez les notifications.": 'No device received the notification. Please enable notifications again.',
+  "M'envoyer une notification de test": 'Send me a test notification',
+  'Désactiver les notifications': 'Turn off notifications',
+  'Notifications refusées : autorisez-les dans les réglages du navigateur.': 'Notifications blocked: allow them in your browser settings.',
+  'Soyez prévenu(e) quand le solde de votre enfant devient bas.': "Get notified when your child's balance runs low.",
   'Activer les notifications': 'Enable notifications',
   'Hors ligne : voici vos derniers tickets enregistrés.': 'Offline: here are your last saved tickets.',
   // Parent
