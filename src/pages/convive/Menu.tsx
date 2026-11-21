@@ -6,7 +6,7 @@ import { useTempsReel } from '../../lib/temps-reel'
 import { ajouterJours, aujourdhui, fcfa, jourCourt, jourLong } from '../../lib/format'
 import { Alerte, BandeVatel, Chargement } from '../../components/ui'
 import { Pastilles, Photo, Prix } from '../../components/Plat'
-import { IconAlertTriangle, IconClock, IconLeaf } from '@tabler/icons-react'
+import { IconAlertTriangle, IconClock, IconHeart, IconLeaf } from '@tabler/icons-react'
 import type { PlatMenu } from '../../lib/types'
 
 export default function Menu() {
@@ -44,6 +44,23 @@ export default function Menu() {
         .filter((p) => p !== vedette)
         // Le plus de portions libres ; à égalité, le moins populaire d'habitude (il risque de rester).
         .sort((a, b) => b.restantes / b.portions_prevues - a.restantes / a.portions_prevues || a.nb_notes - b.nb_notes)[0]
+    : undefined
+  // Suggestion personnalisée : un plat compatible avec le profil, d'abord parmi ceux que la personne
+  // a bien notés, sinon le mieux noté par les autres convives. Règle simple et explicable.
+  const mesNotes = new Map<string, number>()
+  for (const t of tickets ?? []) {
+    const n = Array.isArray(t.note) ? t.note[0]?.valeur : t.note?.valeur
+    const nom = t.menu?.plat?.nom
+    if (n && nom) mesNotes.set(nom, Math.max(n, mesNotes.get(nom) ?? 0))
+  }
+  const compatible = (p: PlatMenu) =>
+    !p.allergenes.some((a) => profil?.allergies.includes(a)) && (!profil?.vegetarien || p.vegetarien)
+  const pourVous = !ticketDuJour
+    ? principaux
+        .filter((p) => (p.reservable || p.offre_active) && p.restantes > 0 && compatible(p) && p !== antiGaspi)
+        .map((p) => ({ p, mienne: mesNotes.get(p.nom) ?? 0 }))
+        .filter(({ p, mienne }) => mienne >= 4 || (p.note_moyenne ?? 0) >= 4.3)
+        .sort((a, b) => b.mienne - a.mienne || (b.p.note_moyenne ?? 0) - (a.p.note_moyenne ?? 0))[0]
     : undefined
   // Rappel de créneau : le ticket du jour dont le créneau commence dans moins de 15 minutes.
   const ticketAujourdhui = tickets?.find((t) => t.jour === debut && t.statut === 'reservee')
@@ -132,6 +149,16 @@ export default function Menu() {
                   </span>
                 )}
               </div>
+            </Link>
+          )}
+
+          {pourVous && (
+            <Link to={`/plat/${pourVous.p.menu_jour_id}`} className="flex items-center gap-3 rounded-2xl border border-ciel/50 bg-ciel-clair p-3">
+              <IconHeart size={24} className="text-marine shrink-0" aria-hidden />
+              <span className="text-sm">
+                <b className="text-marine">Pour vous</b> : {pourVous.p.nom},{' '}
+                {pourVous.mienne >= 4 ? `vous l'avez noté ${pourVous.mienne} ★` : `très apprécié des convives (${pourVous.p.note_moyenne} ★)`}.
+              </span>
             </Link>
           )}
 
