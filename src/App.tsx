@@ -1,7 +1,7 @@
+import { lazy, Suspense } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { Garde } from './auth/Garde'
 import ConviveLayout from './layouts/ConviveLayout'
-import AdminLayout from './layouts/AdminLayout'
 import Connexion from './pages/Connexion'
 import Inscription from './pages/Inscription'
 import Profil from './pages/convive/Profil'
@@ -9,16 +9,22 @@ import Menu from './pages/convive/Menu'
 import Reserver from './pages/convive/Reserver'
 import Tickets from './pages/convive/Tickets'
 import Solde from './pages/convive/Solde'
-import Aujourdhui from './pages/admin/Aujourdhui'
-import Comptoir from './pages/admin/Comptoir'
-import Menus from './pages/admin/Menus'
-import Plats from './pages/admin/Plats'
-import Prevision from './pages/admin/Prevision'
-import Journal from './pages/admin/Journal'
-import Parent from './pages/parent/Parent'
+import { Chargement } from './components/ui'
+
+// Chargés à la demande : un convive sur téléphone ne télécharge jamais l'admin,
+// le lecteur de QR du comptoir ni l'espace parent (réseau mobile lent).
+const AdminLayout = lazy(() => import('./layouts/AdminLayout'))
+const Aujourdhui = lazy(() => import('./pages/admin/Aujourdhui'))
+const Comptoir = lazy(() => import('./pages/admin/Comptoir'))
+const Menus = lazy(() => import('./pages/admin/Menus'))
+const Plats = lazy(() => import('./pages/admin/Plats'))
+const Prevision = lazy(() => import('./pages/admin/Prevision'))
+const Journal = lazy(() => import('./pages/admin/Journal'))
+const Parent = lazy(() => import('./pages/parent/Parent'))
 
 export default function App() {
   return (
+    <Suspense fallback={<Chargement />}>
     <Routes>
       <Route path="/connexion" element={<Connexion />} />
       <Route path="/inscription" element={<Inscription />} />
@@ -53,5 +59,6 @@ export default function App() {
 
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
+    </Suspense>
   )
 }
