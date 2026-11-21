@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../../auth/AuthProvider'
 import { useMenu, useMesTickets } from '../../lib/donnees'
 import { useTempsReel } from '../../lib/temps-reel'
-import { ajouterJours, aujourdhui, fcfa, jourCourt, jourLong } from '../../lib/format'
+import { ajouterJours, aujourdhui, fcfa, jourCourt, jourLong, note } from '../../lib/format'
 import { Alerte, BandeVatel, Chargement } from '../../components/ui'
 import { Pastilles, Photo, Prix } from '../../components/Plat'
 import { IconAlertTriangle, IconClock, IconHeart, IconLeaf } from '@tabler/icons-react'
@@ -143,7 +143,7 @@ export default function Menu() {
                   <span className="font-mono">{fcfa(vedette.offre_active && vedette.prix_offre ? vedette.prix_offre : vedette.prix)}</span>
                 </div>
                 <p className="text-xs opacity-90">
-                  {vedette.description}{vedette.note_moyenne ? ` · ${vedette.note_moyenne} ★` : ''} · {t('{n} restantes', { n: vedette.restantes })}
+                  {vedette.description}{vedette.note_moyenne ? ` · ${note(vedette.note_moyenne)} ★` : ''} · {t('{n} restantes', { n: vedette.restantes })}
                 </p>
                 {vedette.allergenes.some((x) => profil?.allergies.includes(x)) && (
                   <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-white text-refus text-xs font-bold px-2 py-0.5">
@@ -159,7 +159,7 @@ export default function Menu() {
               <IconHeart size={24} className="text-marine shrink-0" aria-hidden />
               <span className="text-sm">
                 <b className="text-marine">{t('Pour vous')}</b> : {pourVous.p.nom},{' '}
-                {pourVous.mienne >= 4 ? t("vous l'avez noté {n} ★", { n: pourVous.mienne }) : t('très apprécié des convives ({n} ★)', { n: pourVous.p.note_moyenne ?? '' })}.
+                {pourVous.mienne >= 4 ? t("vous l'avez noté {n} ★", { n: pourVous.mienne }) : t('très apprécié des convives ({n} ★)', { n: pourVous.p.note_moyenne ? note(pourVous.p.note_moyenne) : '' })}.
               </span>
             </Link>
           )}

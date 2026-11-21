@@ -39,7 +39,11 @@ export default function Aujourdhui() {
   })
 
   const plats = (tb?.plats ?? []).filter((p) => p.type !== 'boisson')
-  const suggestion = estAujourdhui
+  // Une offre n'a de sens que pendant le service : il doit rester au moins un créneau à venir (15 min chacun).
+  const serviceEnCours = estAujourdhui && (tb?.creneaux ?? []).some(
+    (c) => Date.now() < new Date(`${jour}T${c.heure_debut}Z`).getTime() + 15 * 60_000,
+  )
+  const suggestion = serviceEnCours
     ? [...plats].filter((p) => !p.offre_active && restantes(p) >= 8).sort((a, b) => restantes(b) - restantes(a))[0]
     : undefined
   const maxCreneau = Math.max(1, ...(tb?.creneaux ?? []).map((c) => c.reservees))
@@ -148,7 +152,7 @@ export default function Aujourdhui() {
                           <span className="text-xs text-encre-douce">
                             {p.offre_active ? `Offre en cours : ${fcfa(p.prix_offre!)} jusqu'à ${new Date(p.fin_offre!).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Abidjan' })}` : `${Math.max(reste, 0)} non réservées`}
                           </span>
-                          {estAujourdhui && !p.offre_active && reste > 0 && (
+                          {serviceEnCours && !p.offre_active && reste > 0 && (
                             <button className="text-xs font-semibold text-valide underline" disabled={offre.isPending} onClick={() => offre.mutate(p)}>
                               Offre −50 %
                             </button>

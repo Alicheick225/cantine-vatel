@@ -1,5 +1,5 @@
 import { LIBELLE_ALLERGENE, type Allergene, type PlatMenu } from '../lib/types'
-import { fcfa } from '../lib/format'
+import { fcfa, note } from '../lib/format'
 import { useLangue } from '../lib/i18n'
 import { IconAlertTriangle, IconFlame } from '@tabler/icons-react'
 
@@ -32,7 +32,7 @@ export function Pastilles({ plat, allergies }: { plat: PlatMenu; allergies: Alle
   const { t } = useLangue()
   return (
     <div className="flex flex-wrap gap-1.5 mt-1">
-      {plat.note_moyenne && <span className="text-xs text-encre-douce">{plat.note_moyenne} ★ ({plat.nb_notes})</span>}
+      {plat.note_moyenne && <span className="text-xs text-encre-douce">{note(plat.note_moyenne)} ★ ({plat.nb_notes})</span>}
       {plat.vegetarien && <span className="rounded-full bg-valide-clair text-valide text-xs px-2">{t('Végétarien')}</span>}
       {plat.offre_active && <span className="rounded-full bg-valide text-white text-xs px-2">{t('Offre fin de service')}</span>}
       {plat.restantes === 0 ? (

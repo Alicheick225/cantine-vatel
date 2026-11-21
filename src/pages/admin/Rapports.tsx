@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { IconDownload, IconPrinter } from '@tabler/icons-react'
 import { supabase } from '../../lib/supabase'
-import { ajouterJours, aujourdhui, fcfa, jourCourt, jourLong, messageErreur } from '../../lib/format'
+import { ajouterJours, aujourdhui, fcfa, jourCourt, jourLong, messageErreur, note } from '../../lib/format'
 import { Alerte, Bouton, Carte, Chargement } from '../../components/ui'
 
 interface Rapport {
@@ -140,7 +140,7 @@ export default function Rapports() {
                     <td className="p-3 font-mono">{p.reservees}</td>
                     <td className="p-3 font-mono">{p.servies}</td>
                     <td className="p-3 font-mono">{fcfa(p.recettes)}</td>
-                    <td className="p-3">{p.note_moyenne ? `${p.note_moyenne} ★` : '—'}</td>
+                    <td className="p-3">{p.note_moyenne ? `${note(p.note_moyenne)} ★` : '—'}</td>
                   </tr>
                 ))}
               </tbody>

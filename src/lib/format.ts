@@ -8,6 +8,9 @@ export const jourCourt = (iso: string) =>
 export const jourLong = (iso: string) =>
   new Date(iso + 'T12:00:00Z').toLocaleDateString(locale(), { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' })
 
+/** Note sur 5 au format de la langue (4,2 en français, 4.2 en anglais). */
+export const note = (n: number | string) => Number(n).toLocaleString(locale(), { maximumFractionDigits: 1 })
+
 export const heure = (hhmmss: string) => hhmmss.slice(0, 5)
 
 export const dateHeure = (iso: string) =>
