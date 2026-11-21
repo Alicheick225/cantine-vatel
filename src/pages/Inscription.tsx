@@ -1,0 +1,79 @@
+import { useState, type FormEvent } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { useQueryClient } from '@tanstack/react-query'
+import { supabase } from '../lib/supabase'
+import { messageErreur } from '../lib/format'
+import type { Allergene, Categorie } from '../lib/types'
+import { Alerte, Bouton, Champ } from '../components/ui'
+import ChoixAllergies from '../components/ChoixAllergies'
+import { EnTetePublic } from './Connexion'
+
+export default function Inscription() {
+  const navigate = useNavigate()
+  const qc = useQueryClient()
+  const [nom, setNom] = useState('')
+  const [email, setEmail] = useState('')
+  const [mdp, setMdp] = useState('')
+  const [categorie, setCategorie] = useState<Categorie>('etudiant')
+  const [allergies, setAllergies] = useState<Allergene[]>([])
+  const [vegetarien, setVegetarien] = useState(false)
+  const [erreur, setErreur] = useState<string | null>(null)
+  const [envoi, setEnvoi] = useState(false)
+
+  const soumettre = async (e: FormEvent) => {
+    e.preventDefault()
+    setErreur(null)
+    setEnvoi(true)
+    // Le rôle n'est jamais envoyé : la base attribue toujours « convive ».
+    const { data, error } = await supabase.auth.signUp({
+      email: email.trim(),
+      password: mdp,
+      options: { data: { nom: nom.trim(), categorie } },
+    })
+    if (!error && data.user && (allergies.length || vegetarien)) {
+      await supabase.from('profils').update({ allergies, vegetarien }).eq('id', data.user.id)
+      qc.invalidateQueries({ queryKey: ['profil'] })
+    }
+    setEnvoi(false)
+    if (error) return setErreur(messageErreur(error))
+    navigate('/', { replace: true })
+  }
+
+  return (
+    <div className="min-h-dvh max-w-lg mx-auto bg-white">
+      <EnTetePublic />
+      <form onSubmit={soumettre} className="p-6 space-y-4">
+        <h2 className="font-titre font-black text-xl text-marine">Créer un compte</h2>
+        <Champ label="Nom complet" required minLength={2} maxLength={80} value={nom} onChange={(e) => setNom(e.target.value)} />
+        <Champ label="Email" type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+        <Champ label="Mot de passe (6 caractères minimum)" type="password" autoComplete="new-password" required minLength={6} value={mdp} onChange={(e) => setMdp(e.target.value)} />
+        <fieldset>
+          <legend className="text-sm font-semibold text-marine">Vous êtes</legend>
+          <div className="mt-2 grid grid-cols-2 gap-2">
+            {(['etudiant', 'personnel'] as const).map((c) => (
+              <button
+                type="button"
+                key={c}
+                aria-pressed={categorie === c}
+                onClick={() => setCategorie(c)}
+                className={`rounded-xl border px-3 py-2.5 text-sm font-semibold ${categorie === c ? 'bg-ciel-clair border-ciel text-marine' : 'bg-white border-ligne text-encre-douce'}`}
+              >
+                {c === 'etudiant' ? 'Étudiant(e)' : 'Membre du personnel'}
+              </button>
+            ))}
+          </div>
+        </fieldset>
+        <ChoixAllergies valeur={allergies} onChange={setAllergies} />
+        <label className="flex items-center gap-2 text-sm">
+          <input type="checkbox" checked={vegetarien} onChange={(e) => setVegetarien(e.target.checked)} className="size-4 accent-marine" />
+          Je suis végétarien(ne)
+        </label>
+        {erreur && <Alerte>{erreur}</Alerte>}
+        <Bouton type="submit" className="w-full" disabled={envoi}>{envoi ? 'Création…' : 'Créer mon compte'}</Bouton>
+        <p className="text-sm text-center text-encre-douce">
+          Déjà inscrit(e) ? <Link to="/connexion" className="text-marine font-semibold underline">Se connecter</Link>
+        </p>
+      </form>
+    </div>
+  )
+}

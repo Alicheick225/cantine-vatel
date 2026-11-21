@@ -17,7 +17,7 @@ insert into auth.users (id, email, raw_user_meta_data, aud, role) values
 update public.profils set role = 'admin', categorie = null where id = '00000000-0000-0000-0000-0000000000d1';
 update public.profils set allergies = '{arachide}' where id = '00000000-0000-0000-0000-0000000000a1';
 
-with c as (insert into public.creneaux (heure_debut, capacite) values ('12:00', 5) returning id),
+with c as (insert into public.creneaux (heure_debut, capacite) values ('06:13', 5) returning id),
      p as (insert into public.plats (nom, prix, allergenes) values ('Garba test', 1000, '{poisson}') returning id)
 insert into ctx
 select 'creneau', (select id from c)::text
