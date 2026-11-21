@@ -9,6 +9,7 @@ import Menu from './pages/convive/Menu'
 import Reserver from './pages/convive/Reserver'
 import Tickets from './pages/convive/Tickets'
 import Solde from './pages/convive/Solde'
+import PageAvis from './pages/convive/Avis'
 import { EcranChargement } from './components/ui'
 
 // Chargés à la demande : un convive sur téléphone ne télécharge jamais l'admin,
@@ -39,6 +40,7 @@ export default function App() {
           <Route path="/plat/:id" element={<Reserver />} />
           <Route path="/tickets" element={<Tickets />} />
           <Route path="/solde" element={<Solde />} />
+          <Route path="/avis/:platId" element={<PageAvis />} />
           <Route path="/profil" element={<Profil />} />
         </Route>
       </Route>

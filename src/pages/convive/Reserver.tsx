@@ -10,6 +10,7 @@ import { Pastilles, Photo, Prix, allergenesARisque } from '../../components/Plat
 import { LIBELLE_ALLERGENE } from '../../lib/types'
 import { IconArrowLeft } from '@tabler/icons-react'
 import { useLangue } from '../../lib/i18n'
+import { BlocAvis } from './Avis'
 
 export default function Reserver() {
   const { id } = useParams()
@@ -115,6 +116,11 @@ export default function Reserver() {
             <span>{plat.offre_active ? tr('non (offre)') : tr("jusqu'à 8h le {jour}", { jour: jourLong(plat.jour) })}</span>
           </div>
         </div>
+
+        <section>
+          <h2 className="font-bold text-marine text-sm mb-2">{tr('Avis des convives')}</h2>
+          <BlocAvis platId={plat.plat_id} />
+        </section>
 
         {bloque && <Alerte type="info">{bloque} {solde < prix && <Link to="/solde" className="underline font-semibold">{tr('Recharger')}</Link>}</Alerte>}
         {reserver.isError && <Alerte>{tr(messageErreur(reserver.error))}</Alerte>}

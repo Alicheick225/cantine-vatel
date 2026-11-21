@@ -34,10 +34,13 @@ export interface Ticket {
   code_court: string
   jeton_qr: string
   scanne_le: string | null
+  remis_le?: string | null
+  annule_le?: string | null
+  cree_le?: string
   creneau: { heure_debut: string } | null
-  menu: { plat: { nom: string; photo_url: string | null } | null } | null
+  menu: { plat: { id?: number; nom: string; photo_url: string | null; description?: string | null; allergenes?: string[]; vegetarien?: boolean } | null } | null
   // Une seule note par réservation : la base la renvoie comme un objet (parfois comme une liste).
-  note: { valeur: number } | { valeur: number }[] | null
+  note: { valeur: number; commentaire?: string | null } | { valeur: number; commentaire?: string | null }[] | null
 }
 
 /** Les réservations du convive connecté (la RLS ne renvoie que les siennes). */
@@ -47,7 +50,7 @@ export function useMesTickets() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('reservations')
-        .select('id, jour, statut, prix_paye, est_offre, code_court, jeton_qr, scanne_le, creneau:creneaux(heure_debut), menu:menus_jour(plat:plats(nom, photo_url)), note:notes(valeur)')
+        .select('id, jour, statut, prix_paye, est_offre, code_court, jeton_qr, scanne_le, creneau:creneaux(heure_debut), remis_le, annule_le, cree_le, menu:menus_jour(plat:plats(id, nom, photo_url, description, allergenes, vegetarien)), note:notes(valeur, commentaire)')
         .order('jour', { ascending: false })
         .limit(60)
       if (error) {
