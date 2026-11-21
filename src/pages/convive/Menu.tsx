@@ -13,8 +13,12 @@ import { useLangue } from '../../lib/i18n'
 export default function Menu() {
   const { profil } = useAuth()
   const { t } = useLangue()
-  const debut = aujourdhui()
-  const fin = ajouterJours(debut, 13)
+  // La cantine ouvre du lundi au vendredi : on n'affiche que les jours ouvrés de la semaine en cours,
+  // et, le week-end, ceux de la semaine suivante (pour pouvoir réserver le lundi).
+  const auj = aujourdhui()
+  const jourSemaine = new Date(`${auj}T00:00:00Z`).getUTCDay() // 0 dimanche … 6 samedi
+  const debut = jourSemaine === 6 ? ajouterJours(auj, 2) : jourSemaine === 0 ? ajouterJours(auj, 1) : auj
+  const fin = ajouterJours(debut, 5 - new Date(`${debut}T00:00:00Z`).getUTCDay())
   const { data: menu, isLoading, error } = useMenu(debut, fin)
   const { data: tickets } = useMesTickets()
   useTempsReel('convive-menu') // une offre de fin de service apparaît sans recharger
@@ -65,9 +69,9 @@ export default function Menu() {
         .sort((a, b) => b.mienne - a.mienne || (b.p.note_moyenne ?? 0) - (a.p.note_moyenne ?? 0))[0]
     : undefined
   // Rappel de créneau : le ticket du jour dont le créneau commence dans moins de 15 minutes.
-  const ticketAujourdhui = tickets?.find((t) => t.jour === debut && t.statut === 'reservee')
+  const ticketAujourdhui = tickets?.find((t) => t.jour === auj && t.statut === 'reservee')
   const minutesAvant = ticketAujourdhui?.creneau
-    ? (new Date(`${debut}T${ticketAujourdhui.creneau.heure_debut}Z`).getTime() - Date.now()) / 60000
+    ? (new Date(`${auj}T${ticketAujourdhui.creneau.heure_debut}Z`).getTime() - Date.now()) / 60000
     : null
   const prenom = profil?.nom.split(' ')[0]
 
@@ -98,7 +102,7 @@ export default function Menu() {
                 j === jour ? 'bg-ciel text-marine font-bold border-ciel' : 'bg-white border-ligne text-encre'
               }`}
             >
-              {j === debut ? t("Aujourd'hui") : jourCourt(j)}
+              {j === auj ? t("Aujourd'hui") : jourCourt(j)}
             </button>
           ))}
         </nav>
@@ -116,8 +120,8 @@ export default function Menu() {
             </Link>
           )}
 
-          {jour !== debut && parJour.get(debut)?.some((p) => p.offre_active) && (
-            <button onClick={() => setChoisi(debut)} className="w-full text-left">
+          {jour !== auj && parJour.get(auj)?.some((p) => p.offre_active) && (
+            <button onClick={() => setChoisi(auj)} className="w-full text-left">
               <Alerte type="succes">{t("Offre de fin de service en cours aujourd'hui : portions à prix réduit. Voir →")}</Alerte>
             </button>
           )}

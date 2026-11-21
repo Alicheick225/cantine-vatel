@@ -184,7 +184,10 @@ export default function Comptoir() {
           {resultat.ok && resultat.ticket && (resultat.ticket.allergies.length > 0 || resultat.ticket.vegetarien) && (
             <div className="mt-5 flex flex-wrap justify-center gap-2">
               {resultat.ticket.allergies.map((a) => (
-                <span key={a} className="rounded-xl bg-white text-rare-texte font-extrabold px-4 py-2 inline-flex items-center gap-1.5"><IconAlertTriangle size={18} /> Sans {LIBELLE_ALLERGENE[a].toLowerCase()}</span>
+                <span key={a} className="rounded-xl bg-white text-rare-texte font-extrabold px-4 py-2 inline-flex items-center gap-1.5">
+                  <IconAlertTriangle size={18} /> Allergie : {LIBELLE_ALLERGENE[a].toLowerCase()}
+                  {!(resultat.ticket?.allergenes_plat ?? []).includes(a) && <span className="font-semibold text-encre-douce">· absent de ce plat</span>}
+                </span>
               ))}
               {resultat.ticket.vegetarien && <span className="rounded-xl bg-white text-valide font-extrabold px-4 py-2">Végétarien</span>}
             </div>

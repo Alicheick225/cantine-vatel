@@ -80,7 +80,8 @@ export default function Passe() {
               <div className="mt-2 flex flex-wrap gap-1.5">
                 {t.allergies.map((a) => (
                   <span key={a} className="rounded-lg bg-rare text-rare-texte font-bold text-sm px-2 py-0.5 inline-flex items-center gap-1">
-                    <IconAlertTriangle size={14} /> Sans {LIBELLE_ALLERGENE[a].toLowerCase()}
+                    <IconAlertTriangle size={14} /> Allergie : {LIBELLE_ALLERGENE[a].toLowerCase()}
+                    {!(t.allergenes_plat ?? []).includes(a) && <span className="font-normal">· absent de ce plat</span>}
                   </span>
                 ))}
                 {t.vegetarien && <span className="rounded-lg bg-valide-clair text-valide font-bold text-sm px-2 py-0.5">Végétarien</span>}
