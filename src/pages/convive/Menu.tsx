@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../auth/AuthProvider'
 import { useMenu, useMesTickets } from '../../lib/donnees'
+import { useTempsReel } from '../../lib/temps-reel'
 import { ajouterJours, aujourdhui, fcfa, jourCourt, jourLong } from '../../lib/format'
 import { Alerte, BandeVatel, Chargement } from '../../components/ui'
 import { Pastilles, Photo, Prix } from '../../components/Plat'
@@ -13,6 +14,7 @@ export default function Menu() {
   const fin = ajouterJours(debut, 13)
   const { data: menu, isLoading, error } = useMenu(debut, fin)
   const { data: tickets } = useMesTickets()
+  useTempsReel('convive-menu') // une offre de fin de service apparaît sans recharger
 
   // Jours ouvrés proposés, regroupés par date.
   const parJour = useMemo(() => {
@@ -70,6 +72,12 @@ export default function Menu() {
       {jour && (
         <div className="px-4 pt-2 space-y-3">
           <p className="text-sm text-encre-douce capitalize">{jourLong(jour)}</p>
+
+          {jour !== debut && parJour.get(debut)?.some((p) => p.offre_active) && (
+            <button onClick={() => setChoisi(debut)} className="w-full text-left">
+              <Alerte type="succes">Offre de fin de service en cours aujourd'hui : portions à prix réduit. Voir →</Alerte>
+            </button>
+          )}
 
           {ticketDuJour && (
             <Link to="/tickets" className="block">

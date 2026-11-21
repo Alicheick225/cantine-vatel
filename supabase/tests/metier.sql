@@ -27,14 +27,14 @@ insert into public.menus_jour (jour, plat_id, portions_prevues)
 select public.aujourdhui() + 1, val::bigint, 1 from ctx where cle = 'plat';
 insert into public.menus_jour (jour, plat_id, portions_prevues)
 select public.aujourdhui(), val::bigint, 10 from ctx where cle = 'plat';
-insert into ctx select 'menu_demain', id::text from public.menus_jour where jour = public.aujourdhui() + 1;
-insert into ctx select 'menu_jour', id::text from public.menus_jour where jour = public.aujourdhui();
+insert into ctx select 'menu_demain', id::text from public.menus_jour where jour = public.aujourdhui() + 1 and plat_id = (select val::bigint from ctx where cle = 'plat');
+insert into ctx select 'menu_jour', id::text from public.menus_jour where jour = public.aujourdhui() and plat_id = (select val::bigint from ctx where cle = 'plat');
 
 -- Ticket du jour créé d'avance (comme le script de préparation de la démo).
 insert into public.reservations (utilisateur_id, menu_jour_id, creneau_id, jour, prix_paye, jeton_qr, code_court)
 select '00000000-0000-0000-0000-0000000000a1', (select val::bigint from ctx where cle = 'menu_jour'),
        (select val::smallint from ctx where cle = 'creneau'), public.aujourdhui(), 1000,
-       'jetontestdujour0000000000000000000000000000000000000000000000000', 'VTL-0042';
+       'jetontestdujour0000000000000000000000000000000000000000000000000', 'VTL-9042';
 
 -- ===== Awa (convive) =====
 set local role authenticated;
@@ -74,7 +74,7 @@ begin
   insert into resultats (critere, test, resultat) values ('Métier', 'Annulation avant la limite : remboursement intégral',
     case when (v ->> 'solde')::int = 2000 then 'OK' else 'ÉCHEC : ' || v::text end);
 
-  begin perform public.servir('VTL-0042'); m := 'ÉCHEC';
+  begin perform public.servir('VTL-9042'); m := 'ÉCHEC';
   exception when others then m := case when sqlerrm like '%administrateur%' then 'OK' else 'ÉCHEC : ' || sqlerrm end; end;
   insert into resultats (critere, test, resultat) values ('Confidentialité', 'Un convive ne peut pas valider son propre ticket', m);
 end $$;
@@ -85,7 +85,7 @@ select set_config('request.jwt.claims', '{"sub":"00000000-0000-0000-0000-0000000
 do $$
 declare v json;
 begin
-  v := public.servir('vtl-0042');
+  v := public.servir('vtl-9042');
   insert into resultats (critere, test, resultat) values ('Métier', 'Scan du ticket du jour : écran vert avec plat et allergies',
     case when (v ->> 'ok')::boolean and v -> 'ticket' ->> 'plat' = 'Garba test'
               and v -> 'ticket' -> 'allergies' ->> 0 = 'arachide' then 'OK' else 'ÉCHEC : ' || v::text end);
@@ -94,7 +94,7 @@ begin
   insert into resultats (critere, test, resultat) values ('Intégrité', 'Deuxième scan (capture partagée) : écran rouge « déjà servi »',
     case when not (v ->> 'ok')::boolean and v ->> 'raison' = 'deja_servi' then 'OK' else 'ÉCHEC : ' || v::text end);
 
-  v := public.servir('VTL-9999');
+  v := public.servir('VTL-ABCD');
   insert into resultats (critere, test, resultat) values ('Intégrité', 'Code inconnu : écran rouge',
     case when v ->> 'raison' = 'inconnu' then 'OK' else 'ÉCHEC : ' || v::text end);
 end $$;
@@ -104,7 +104,8 @@ reset role;
 insert into resultats (critere, test, resultat)
 select 'Traçabilité', 'Les refus au comptoir sont journalisés',
        case when count(*) = 2 then 'OK' else 'ÉCHEC : ' || count(*) end
-from public.journal_audit where action = 'REFUS' and operation = 'servir';
+from public.journal_audit where action = 'REFUS' and operation = 'servir'
+  and horodatage = now();  -- seulement les refus de ce test (même transaction)
 
 insert into resultats (critere, test, resultat)
 select 'Intégrité', 'Solde égal à la somme des transactions',
@@ -119,7 +120,7 @@ select set_config('request.jwt.claims', '{"sub":"00000000-0000-0000-0000-0000000
 do $$
 declare m text; r bigint;
 begin
-  select id into r from public.reservations where code_court = 'VTL-0042' and jour = public.aujourdhui();
+  select id into r from public.reservations where code_court = 'VTL-9042' and jour = public.aujourdhui();
   perform public.noter(r, 5::smallint, 'Très bon');
   begin perform public.noter(r, 1::smallint); m := 'ÉCHEC';
   exception when others then m := case when sqlerrm like '%déjà été noté%' then 'OK' else 'ÉCHEC : ' || sqlerrm end; end;
