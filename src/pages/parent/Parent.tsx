@@ -56,7 +56,6 @@ function Recharge({ enfant }: { enfant: Enfant }) {
           </Bouton>
         </div>
       )}
-      <p className="text-[11px] text-encre-douce text-center">{t('Paiement simulé pour la démonstration.')}</p>
     </div>
   )
 }

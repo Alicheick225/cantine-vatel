@@ -40,7 +40,7 @@ function LigneOperation({ t, moi }: { t: Transaction; moi?: string }) {
       <button onClick={() => setOuvert(!ouvert)} aria-expanded={ouvert} className="w-full flex justify-between gap-3 text-left items-center">
         <div className="flex-1 min-w-0">
           <p className="font-semibold">
-            {tr(LIBELLES[t.type])}{t.moyen ? ` · ${MOYENS.find((m) => m.id === t.moyen)?.nom ?? 'Simulé'}` : ''}
+            {tr(LIBELLES[t.type])}{t.moyen ? ` · ${MOYENS.find((m) => m.id === t.moyen)?.nom ?? 'Mobile Money'}` : ''}
             {t.reservation?.menu?.plat && <span className="font-normal text-encre-douce"> · {t.reservation.menu.plat.nom}</span>}
           </p>
           <p className="text-xs text-encre-douce">{dateHeure(t.cree_le)}</p>
@@ -55,7 +55,7 @@ function LigneOperation({ t, moi }: { t: Transaction; moi?: string }) {
         <dl className="mt-2 rounded-xl bg-fond p-3 space-y-1">
           {ligne('Opération', <span className="font-mono">n° {t.id}</span>)}
           {ligne('Date et heure', dateHeure(t.cree_le))}
-          {t.moyen && ligne('Moyen de paiement', <>{MOYENS.find((m) => m.id === t.moyen)?.nom}<span className="block text-xs text-encre-douce">{tr('paiement simulé (démonstration)')}</span></>)}
+          {t.moyen && ligne('Moyen de paiement', MOYENS.find((m) => m.id === t.moyen)?.nom)}
           {t.type === 'recharge' && t.cree_par && moi && t.cree_par !== moi && ligne('Payée par', tr('votre parent'))}
           {t.reservation && ligne('Repas', <>{t.reservation.menu?.plat?.nom}{t.reservation.est_offre ? ` · ${tr('offre anti-gaspi')}` : ''}<span className="block text-xs text-encre-douce first-letter:uppercase">{jourLong(t.reservation.jour)} · {t.reservation.code_court}</span></>)}
           {t.type === 'remboursement' && ligne('Motif', tr('annulation avant 8h'))}
@@ -139,7 +139,6 @@ export default function Solde() {
           ) : (
             <div className="rounded-xl border border-ligne p-3 space-y-2">
               <p className="text-sm">{tr('Confirmez-vous le paiement de {m} via {moyen} ?', { m: fcfa(montant!), moyen: nomMoyen })}</p>
-              <p className="text-xs text-encre-douce">{tr("Paiement simulé pour la démonstration : aucun argent réel n'est débité.")}</p>
               {recharger.isError && <Alerte>{tr(messageErreur(recharger.error))}</Alerte>}
               <div className="flex gap-2">
                 <Bouton variante="contour" className="flex-1" onClick={() => setConfirmation(false)}>{tr('Retour')}</Bouton>
