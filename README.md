@@ -153,14 +153,15 @@ L'IA était autorisée par le règlement. **Ali Ouattara** a conçu le projet : 
 ## Crédits
 
 - **Charte graphique :** inspirée de l'identité de Vatel Abidjan (bleu marine, bleu ciel, orange, corail), avec des contrastes corrigés pour la lisibilité.
-- **Photos des plats** (Pexels, licence libre d'usage, copies allégées dans `public/plats`) :
-  - Attiéké poisson braisé : Masuma Rahaman ;
-  - Garba : Iara Melo ;
-  - Alloco poulet braisé : Paul Nana ;
-  - Alloco œuf : Ophelia Acquah ;
-  - Riz sauce graine : Workman House ;
-  - Kédjénou de poulet : Letícia Alvares ;
-  - Placali sauce kopè : Ellis Mbeku ;
-  - Bissap : Moisés Fonseca.
+- **Photos des plats** (copies allégées dans `public/plats`) :
+  - Wikimedia Commons :
+    - Le Garba, par Didierwiki (CC0) ;
+    - Kédjénou de poulet sauce claire, par African Hope (CC BY-SA 4.0) ;
+    - Aloko, par Krista (CC BY 2.0) ;
+    - Placali à la sauce kôpê, par AZIMIE (CC BY-SA 4.0) ;
+    - Attieke serves with fried carp, par Kod B (CC BY-SA 4.0) ;
+    - Un plat de riz à la sauce graine 03, par Mognissan (CC BY-SA 4.0) ;
+    - Alloco aux œufs, par Traorejci (CC BY-SA 4.0).
+  - Pexels (licence Pexels) : Bissap, par Moisés Fonseca.
 
   Ces photos illustrent les plats : ce ne sont pas des photos de la cantine.
