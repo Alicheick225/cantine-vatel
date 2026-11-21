@@ -6,6 +6,8 @@ import { LIBELLE_ALLERGENE, type Allergene } from '../../lib/types'
 import { Alerte, Bouton, Carte, Champ, Chargement } from '../../components/ui'
 import { Photo } from '../../components/Plat'
 import ChoixAllergies from '../../components/ChoixAllergies'
+import { envoyerPhotoPlat } from '../../lib/photos'
+import { IconPhotoUp } from '@tabler/icons-react'
 
 interface Plat {
   id: number
@@ -89,12 +91,22 @@ export default function Plats() {
     },
     onSuccess: () => qc.invalidateQueries(),
   })
+  const photo = useMutation({
+    mutationFn: async ({ id, fichier }: { id: number; fichier: File }) => {
+      const url = await envoyerPhotoPlat(id, fichier)
+      const { error } = await supabase.from('plats').update({ photo_url: url }).eq('id', id)
+      if (error) throw error
+    },
+    onSuccess: () => qc.invalidateQueries(),
+  })
 
   return (
     <div className="space-y-4 max-w-5xl">
       <h1 className="font-titre font-black text-2xl text-marine">Plats</h1>
-      <p className="text-sm text-encre-douce">Un plat n'est jamais supprimé : on le désactive, pour garder l'historique des réservations et des notes.</p>
+      <p className="text-sm text-encre-douce">Un plat n'est jamais supprimé : on le désactive, pour garder l'historique des réservations et des notes. Touchez une photo pour la changer (elle est réduite automatiquement).</p>
       {modifier.isError && <Alerte>{messageErreur(modifier.error)}</Alerte>}
+      {photo.isError && <Alerte>{messageErreur(photo.error)}</Alerte>}
+      {photo.isPending && <Alerte type="info">Envoi de la photo…</Alerte>}
       {isLoading && <Chargement />}
       <Carte className="!p-0 overflow-x-auto">
         <table className="w-full text-sm">
@@ -106,7 +118,12 @@ export default function Plats() {
               <tr key={p.id} className={p.actif ? '' : 'opacity-50'}>
                 <td className="p-3">
                   <div className="flex items-center gap-2.5">
-                    <Photo url={p.photo_url} nom={p.nom} className="w-9 h-9 rounded-lg shrink-0" />
+                    <label className="relative cursor-pointer shrink-0" title="Changer la photo">
+                      <Photo url={p.photo_url} nom={p.nom} className="w-11 h-11 rounded-lg" />
+                      <span className="absolute -bottom-1 -right-1 rounded-full bg-marine text-white p-0.5"><IconPhotoUp size={12} aria-hidden /></span>
+                      <input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" aria-label={`Changer la photo de ${p.nom}`}
+                        onChange={(e) => { const f = e.target.files?.[0]; if (f) photo.mutate({ id: p.id, fichier: f }); e.target.value = '' }} />
+                    </label>
                     <div>
                       <b>{p.nom}</b>{p.vegetarien && <span className="ml-1.5 rounded-full bg-valide-clair text-valide text-xs px-2">Végétarien</span>}
                       <p className="text-xs text-encre-douce">{p.description}</p>
