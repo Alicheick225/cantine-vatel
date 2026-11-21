@@ -54,3 +54,41 @@ export function useMesTickets() {
     },
   })
 }
+
+export interface LignePlat {
+  menu_jour_id: number
+  nom: string
+  type: string
+  photo_url: string | null
+  prix: number
+  portions_prevues: number
+  portions_preparees: number | null
+  prix_offre: number | null
+  fin_offre: string | null
+  offre_active: boolean
+  reservees: number
+  servies: number
+  vendues_en_offre: number
+}
+
+export interface TableauBord {
+  jour: string
+  reservees: number
+  servies: number
+  recettes: number
+  portions_sauvees: number
+  taux_presence_7j: number | null
+  plats: LignePlat[]
+  creneaux: { heure_debut: string; reservees: number; servies: number }[]
+}
+
+export function useTableauBord(jour: string) {
+  return useQuery({
+    queryKey: ['tableau', jour],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('tableau_bord', { p_jour: jour })
+      if (error) throw error
+      return data as TableauBord
+    },
+  })
+}

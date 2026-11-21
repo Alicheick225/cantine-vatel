@@ -10,6 +10,8 @@ import Reserver from './pages/convive/Reserver'
 import Tickets from './pages/convive/Tickets'
 import Solde from './pages/convive/Solde'
 import Bientot from './components/Bientot'
+import Aujourdhui from './pages/admin/Aujourdhui'
+import Comptoir from './pages/admin/Comptoir'
 
 export default function App() {
   return (
@@ -30,9 +32,9 @@ export default function App() {
 
       {/* Administrateur */}
       <Route element={<Garde roles={['admin']} />}>
-        <Route path="/admin/comptoir" element={<Bientot titre="Comptoir" />} />
+        <Route path="/admin/comptoir" element={<Comptoir />} />
         <Route element={<AdminLayout />}>
-          <Route path="/admin" element={<Bientot titre="Aujourd'hui" />} />
+          <Route path="/admin" element={<Aujourdhui />} />
           <Route path="/admin/menus" element={<Bientot titre="Menus" />} />
           <Route path="/admin/plats" element={<Bientot titre="Plats" />} />
           <Route path="/admin/prevision" element={<Bientot titre="Prévision" />} />
