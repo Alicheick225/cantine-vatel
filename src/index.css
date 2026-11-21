@@ -24,6 +24,17 @@
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
 }
 
+/* Haut de l'écran sur téléphone : la zone de la barre d'état (et le rebond du défilement)
+   prend le bleu marine de l'en-tête, au lieu d'un dégradé blanc. */
+html {
+  background-color: var(--color-marine);
+}
 body {
-  @apply bg-fond text-encre font-sans antialiased;
+  @apply text-encre font-sans antialiased;
+  background-color: transparent;
+  padding-top: env(safe-area-inset-top);
+}
+#root {
+  min-height: 100dvh;
+  background-color: var(--color-fond);
 }

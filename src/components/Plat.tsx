@@ -1,5 +1,6 @@
 import { LIBELLE_ALLERGENE, type Allergene, type PlatMenu } from '../lib/types'
 import { fcfa } from '../lib/format'
+import { IconAlertTriangle, IconFlame } from '@tabler/icons-react'
 
 export function Photo({ url, nom, className = '' }: { url: string | null; nom: string; className?: string }) {
   if (url) return <img src={url} alt={nom} loading="lazy" className={`object-cover bg-ciel-clair ${className}`} />
@@ -35,11 +36,11 @@ export function Pastilles({ plat, allergies }: { plat: PlatMenu; allergies: Alle
       {plat.restantes === 0 ? (
         <span className="rounded-full bg-fond text-encre-douce text-xs px-2">Épuisé</span>
       ) : plat.restantes <= 10 ? (
-        <span className="rounded-full bg-rare text-rare-texte text-xs font-bold px-2">Plus que {plat.restantes}</span>
+        <span className="rounded-full bg-rare text-rare-texte text-xs font-bold px-2 inline-flex items-center gap-0.5"><IconFlame size={13} aria-hidden />Plus que {plat.restantes}</span>
       ) : null}
       {risque.length > 0 && (
-        <span className="rounded-full bg-refus/10 text-refus text-xs font-bold px-2">
-          ⚠ Contient : {risque.map((a) => LIBELLE_ALLERGENE[a].toLowerCase()).join(', ')}
+        <span className="rounded-full bg-refus/10 text-refus text-xs font-bold px-2 inline-flex items-center gap-0.5">
+          <IconAlertTriangle size={13} aria-hidden /> Contient : {risque.map((a) => LIBELLE_ALLERGENE[a].toLowerCase()).join(', ')}
         </span>
       )}
     </div>

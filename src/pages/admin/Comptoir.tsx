@@ -7,6 +7,7 @@ import { useTempsReel } from '../../lib/temps-reel'
 import { aujourdhui, jourLong, messageErreur } from '../../lib/format'
 import { LIBELLE_ALLERGENE, type Allergene } from '../../lib/types'
 import { BandeVatel } from '../../components/ui'
+import { IconAlertTriangle, IconArrowRight, IconCheck, IconX } from '@tabler/icons-react'
 
 interface InfoTicket {
   plat: string
@@ -99,7 +100,7 @@ export default function Comptoir() {
       <BandeVatel />
       <header className="flex items-center justify-between px-4 pt-4">
         <h1 className="font-titre font-black text-lg">Comptoir</h1>
-        <Link to="/admin" className="rounded-full bg-white/15 px-3 py-1 text-sm">✕ Quitter</Link>
+        <Link to="/admin" className="rounded-full bg-white/15 px-3 py-1 text-sm inline-flex items-center gap-1"><IconX size={14} /> Quitter</Link>
       </header>
       <p className="px-4 pt-1 text-sm opacity-85 flex justify-between">
         <span className="capitalize">{jourLong(aujourdhui())}</span>
@@ -124,7 +125,7 @@ export default function Comptoir() {
               className="flex-1 font-mono text-lg text-marine tracking-widest py-3 outline-none bg-transparent"
             />
           </label>
-          <button className="rounded-xl bg-action text-marine font-bold px-5" aria-label="Valider le code">→</button>
+          <button className="rounded-xl bg-action text-marine font-bold px-5" aria-label="Valider le code"><IconArrowRight size={22} /></button>
         </form>
         {erreur && <p role="alert" className="text-sm bg-refus rounded-xl px-3 py-2 w-full">{erreur}</p>}
       </div>
@@ -136,7 +137,7 @@ export default function Comptoir() {
           className={`fixed inset-0 z-50 flex flex-col items-center justify-center text-center p-6 ${resultat.ok ? 'bg-valide' : 'bg-refus'}`}
         >
           <div className={`w-24 h-24 rounded-full bg-white flex items-center justify-center text-6xl font-bold ${resultat.ok ? 'text-valide' : 'text-refus'}`}>
-            {resultat.ok ? '✓' : '✕'}
+            {resultat.ok ? <IconCheck size={60} stroke={3} /> : <IconX size={60} stroke={3} />}
           </div>
           <p className="mt-5 font-extrabold tracking-[0.2em] text-sm">{resultat.ok ? 'À SERVIR' : 'NE PAS SERVIR'}</p>
           <p className="font-titre font-black text-4xl mt-2 max-w-lg">
@@ -153,7 +154,7 @@ export default function Comptoir() {
           {resultat.ok && resultat.ticket && (resultat.ticket.allergies.length > 0 || resultat.ticket.vegetarien) && (
             <div className="mt-5 flex flex-wrap justify-center gap-2">
               {resultat.ticket.allergies.map((a) => (
-                <span key={a} className="rounded-xl bg-white text-rare-texte font-extrabold px-4 py-2">⚠ Sans {LIBELLE_ALLERGENE[a].toLowerCase()}</span>
+                <span key={a} className="rounded-xl bg-white text-rare-texte font-extrabold px-4 py-2 inline-flex items-center gap-1.5"><IconAlertTriangle size={18} /> Sans {LIBELLE_ALLERGENE[a].toLowerCase()}</span>
               ))}
               {resultat.ticket.vegetarien && <span className="rounded-xl bg-white text-valide font-extrabold px-4 py-2">Végétarien</span>}
             </div>

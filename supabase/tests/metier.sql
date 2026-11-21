@@ -114,6 +114,23 @@ select 'Intégrité', 'Solde égal à la somme des transactions',
 from public.profils p left join public.transactions t on t.utilisateur_id = p.id
 where p.id = '00000000-0000-0000-0000-0000000000a1' group by p.solde;
 
+-- ===== Offre de fin de service : créneau déjà passé refusé (correctif du 21/11) =====
+set local role authenticated;
+select set_config('request.jwt.claims', '{"sub":"00000000-0000-0000-0000-0000000000d1","role":"authenticated"}', true);
+select public.lancer_offre((select val::bigint from ctx where cle = 'menu_jour'), 500, now() + interval '30 minutes');
+select set_config('request.jwt.claims', '{"sub":"00000000-0000-0000-0000-0000000000a1","role":"authenticated"}', true);
+do $$
+declare m text;
+begin
+  begin
+    perform public.reserver((select val::bigint from ctx where cle = 'menu_jour'), (select val::smallint from ctx where cle = 'creneau'));
+    m := 'ÉCHEC : réservation acceptée';
+  exception when others then m := case when sqlerrm like '%déjà passé%' then 'OK' else 'ÉCHEC : ' || sqlerrm end;
+  end;
+  insert into resultats (critere, test, resultat) values ('Métier', 'Offre de fin de service : créneau déjà passé refusé', m);
+end $$;
+reset role;
+
 -- ===== Awa note son repas =====
 set local role authenticated;
 select set_config('request.jwt.claims', '{"sub":"00000000-0000-0000-0000-0000000000a1","role":"authenticated"}', true);

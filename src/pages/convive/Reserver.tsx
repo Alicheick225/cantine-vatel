@@ -8,6 +8,7 @@ import { ajouterJours, aujourdhui, fcfa, heure, jourLong, messageErreur } from '
 import { Alerte, Bouton, Chargement } from '../../components/ui'
 import { Pastilles, Photo, Prix, allergenesARisque } from '../../components/Plat'
 import { LIBELLE_ALLERGENE } from '../../lib/types'
+import { IconArrowLeft } from '@tabler/icons-react'
 
 export default function Reserver() {
   const { id } = useParams()
@@ -46,6 +47,7 @@ export default function Reserver() {
     : dejaReserve ? `Vous avez déjà réservé ce jour-là (${dejaReserve.menu?.plat?.nom}).`
     : !plat.reservable && !plat.offre_active ? 'Les réservations pour ce jour sont closes (limite : 8h le jour même).'
     : plat.restantes === 0 ? 'Plus de portion disponible pour ce plat.'
+    : creneaux && creneaux.every((c) => c.passe || c.restantes === 0) ? 'Plus aucun créneau disponible ce jour-là.'
     : solde < prix ? `Solde insuffisant : ${fcfa(solde)} disponibles, ${fcfa(prix)} nécessaires.`
     : null
 
@@ -53,7 +55,7 @@ export default function Reserver() {
     <div>
       <div className="relative h-64">
         <Photo url={plat.photo_url} nom={plat.nom} className="absolute inset-0 w-full h-full" />
-        <button onClick={() => navigate(-1)} aria-label="Retour" className="absolute top-3 left-3 w-9 h-9 rounded-full bg-white text-marine font-bold shadow">←</button>
+        <button onClick={() => navigate(-1)} aria-label="Retour" className="absolute top-3 left-3 w-9 h-9 rounded-full bg-white text-marine shadow flex items-center justify-center"><IconArrowLeft size={20} /></button>
       </div>
       <div className="-mt-6 relative bg-white rounded-t-3xl px-5 pt-5 pb-6 space-y-4">
         <div>
@@ -78,22 +80,23 @@ export default function Reserver() {
             <div className="grid grid-cols-4 gap-2">
               {creneaux?.map((c) => {
                 const complet = c.restantes === 0
+                const indisponible = complet || c.passe
                 const actif = c.creneau_id === creneau
                 return (
                   <button
                     key={c.creneau_id}
-                    disabled={complet}
+                    disabled={indisponible}
                     onClick={() => setCreneau(c.creneau_id)}
                     aria-pressed={actif}
-                    aria-label={`${heure(c.heure_debut)}, ${complet ? 'complet' : `${c.restantes} places`}`}
+                    aria-label={`${heure(c.heure_debut)}, ${c.passe ? 'passé' : complet ? 'complet' : `${c.restantes} places`}`}
                     className={`rounded-xl py-1.5 text-center border ${
                       actif ? 'bg-marine text-white border-marine ring-2 ring-ciel'
-                      : complet ? 'bg-fond text-encre-douce/60 border-transparent line-through'
+                      : indisponible ? 'bg-fond text-encre-douce/60 border-transparent line-through'
                       : 'bg-white border-ligne'
                     }`}
                   >
                     <span className="block font-mono text-sm">{heure(c.heure_debut)}</span>
-                    <span className="block text-[11px] no-underline">{complet ? 'complet' : `${c.restantes} pl.`}</span>
+                    <span className="block text-[11px] no-underline">{c.passe ? 'passé' : complet ? 'complet' : `${c.restantes} pl.`}</span>
                   </button>
                 )
               })}

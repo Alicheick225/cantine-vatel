@@ -6,6 +6,7 @@ import { useTempsReel } from '../../lib/temps-reel'
 import { ajouterJours, aujourdhui, fcfa, jourCourt, jourLong } from '../../lib/format'
 import { Alerte, BandeVatel, Chargement } from '../../components/ui'
 import { Pastilles, Photo, Prix } from '../../components/Plat'
+import { IconClock, IconLeaf } from '@tabler/icons-react'
 import type { PlatMenu } from '../../lib/types'
 
 export default function Menu() {
@@ -91,7 +92,7 @@ export default function Menu() {
           {minutesAvant !== null && minutesAvant <= 15 && minutesAvant > -15 && (
             <Link to="/tickets" className="block">
               <Alerte type="info">
-                ⏰ Votre créneau {minutesAvant > 0 ? `commence dans ${Math.ceil(minutesAvant)} min` : 'est en cours'} : {ticketAujourdhui?.menu?.plat?.nom}. Préparez votre ticket →
+                <IconClock size={16} className="inline -mt-0.5 mr-1" aria-hidden />Votre créneau {minutesAvant > 0 ? `commence dans ${Math.ceil(minutesAvant)} min` : 'est en cours'} : {ticketAujourdhui?.menu?.plat?.nom}. Préparez votre ticket →
               </Alerte>
             </Link>
           )}
@@ -131,7 +132,7 @@ export default function Menu() {
 
           {antiGaspi && (
             <Link to={`/plat/${antiGaspi.menu_jour_id}`} className="flex items-center gap-3 rounded-2xl border border-valide/30 bg-valide-clair p-3">
-              <span aria-hidden className="text-xl">🌱</span>
+              <IconLeaf size={24} className="text-valide shrink-0" aria-hidden />
               <span className="text-sm">
                 <b className="text-valide">Choix anti-gaspi</b> : {antiGaspi.nom}, encore {antiGaspi.restantes} portions et compatible avec votre profil. Le choisir aide la cuisine à moins jeter.
               </span>

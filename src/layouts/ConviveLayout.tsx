@@ -1,33 +1,35 @@
 import { NavLink, Outlet } from 'react-router-dom'
+import { IconTicket, IconToolsKitchen2, IconUser, IconWallet } from '@tabler/icons-react'
 
+// Les mêmes icônes que la maquette (Tabler Icons, contour).
 const ONGLETS = [
-  { to: '/', label: 'Menu', icone: '🍽' },
-  { to: '/tickets', label: 'Tickets', icone: '🎟' },
-  { to: '/solde', label: 'Solde', icone: '💳' },
-  { to: '/profil', label: 'Profil', icone: '👤' },
+  { to: '/', label: 'Menu', Icone: IconToolsKitchen2 },
+  { to: '/tickets', label: 'Tickets', Icone: IconTicket },
+  { to: '/solde', label: 'Solde', Icone: IconWallet },
+  { to: '/profil', label: 'Profil', Icone: IconUser },
 ]
 
 export default function ConviveLayout() {
   return (
-    <div className="min-h-dvh flex flex-col max-w-lg mx-auto bg-white shadow-sm">
+    <div className="min-h-dvh flex flex-col max-w-lg mx-auto bg-white">
       <main className="flex-1 pb-20">
         <Outlet />
       </main>
       <nav className="fixed bottom-0 inset-x-0 max-w-lg mx-auto bg-white border-t border-ligne flex justify-around pb-[env(safe-area-inset-bottom)]">
-        {ONGLETS.map((o) => (
+        {ONGLETS.map(({ to, label, Icone }) => (
           <NavLink
-            key={o.to}
-            to={o.to}
-            end={o.to === '/'}
+            key={to}
+            to={to}
+            end={to === '/'}
             className={({ isActive }) =>
-              `flex-1 text-center pt-2 pb-2.5 text-xs ${isActive ? 'text-marine font-bold' : 'text-encre-douce'}`
+              `flex-1 flex flex-col items-center pt-2 pb-2.5 text-[11px] ${isActive ? 'text-marine font-bold' : 'text-encre-douce'}`
             }
           >
             {({ isActive }) => (
               <>
-                <span className={`block mx-auto mb-1 h-[3px] w-7 rounded ${isActive ? 'bg-ciel' : 'bg-transparent'}`} />
-                <span aria-hidden className="block text-lg leading-none">{o.icone}</span>
-                {o.label}
+                <span className={`mb-1 h-[3px] w-7 rounded ${isActive ? 'bg-ciel' : 'bg-transparent'}`} />
+                <Icone size={22} stroke={isActive ? 2 : 1.6} aria-hidden />
+                <span className="mt-0.5">{label}</span>
               </>
             )}
           </NavLink>

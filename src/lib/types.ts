@@ -47,4 +47,5 @@ export interface Creneau {
   capacite: number
   reservees: number
   restantes: number
+  passe: boolean
 }

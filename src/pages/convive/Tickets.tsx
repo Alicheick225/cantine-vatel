@@ -6,6 +6,7 @@ import { useMesTickets, type Ticket } from '../../lib/donnees'
 import { aujourdhui, fcfa, heure, jourLong, messageErreur } from '../../lib/format'
 import { Alerte, BandeVatel, Bouton, Chargement } from '../../components/ui'
 import { Photo } from '../../components/Plat'
+import { IconCircleCheck } from '@tabler/icons-react'
 
 const limiteAnnulation = (jour: string) => new Date(`${jour}T08:00:00Z`) // 8h à Abidjan (UTC+0)
 
@@ -34,7 +35,7 @@ function GrandTicket({ t, nouveau }: { t: Ticket; nouveau: boolean }) {
         <div className="min-w-0">
           <p className="font-bold text-marine">{t.menu?.plat?.nom}</p>
           <p className="text-xs text-encre-douce capitalize">{jourLong(t.jour)} · {t.creneau ? heure(t.creneau.heure_debut) : ''}</p>
-          <span className="inline-block mt-1 rounded-full bg-valide-clair text-valide text-xs font-bold px-2">✓ À retirer</span>
+          <span className="inline-flex items-center gap-1 mt-1 rounded-full bg-valide-clair text-valide text-xs font-bold px-2"><IconCircleCheck size={13} aria-hidden /> À retirer</span>
         </div>
       </div>
       <div className="relative h-4" aria-hidden>

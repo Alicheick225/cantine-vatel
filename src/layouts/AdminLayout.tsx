@@ -1,13 +1,15 @@
 import { NavLink, Outlet, Link } from 'react-router-dom'
 import { useAuth } from '../auth/AuthProvider'
 import { BandeVatel } from '../components/ui'
+import { IconBowlChopsticks, IconCalendarWeek, IconChartLine, IconLayoutDashboard, IconListSearch, IconLogout, IconScan } from '@tabler/icons-react'
 
+// Les mêmes icônes que la maquette admin (Tabler Icons, contour).
 const LIENS = [
-  { to: '/admin', label: "Aujourd'hui" },
-  { to: '/admin/menus', label: 'Menus' },
-  { to: '/admin/plats', label: 'Plats' },
-  { to: '/admin/prevision', label: 'Prévision' },
-  { to: '/admin/journal', label: "Journal d'audit" },
+  { to: '/admin', label: "Aujourd'hui", Icone: IconLayoutDashboard },
+  { to: '/admin/menus', label: 'Menus', Icone: IconCalendarWeek },
+  { to: '/admin/plats', label: 'Plats', Icone: IconBowlChopsticks },
+  { to: '/admin/prevision', label: 'Prévision', Icone: IconChartLine },
+  { to: '/admin/journal', label: "Journal d'audit", Icone: IconListSearch },
 ]
 
 export default function AdminLayout() {
@@ -24,23 +26,24 @@ export default function AdminLayout() {
           </div>
         </div>
         <nav className="flex md:flex-col overflow-x-auto flex-1">
-          {LIENS.map((l) => (
+          {LIENS.map(({ to, label, Icone }) => (
             <NavLink
-              key={l.to}
-              to={l.to}
-              end={l.to === '/admin'}
+              key={to}
+              to={to}
+              end={to === '/admin'}
               className={({ isActive }) =>
-                `whitespace-nowrap px-4 py-2.5 text-sm ${isActive ? 'bg-white/10 font-semibold md:border-l-4 md:border-ciel' : 'text-white/80'}`
+                `flex items-center gap-2.5 whitespace-nowrap px-4 py-2.5 text-sm ${isActive ? 'bg-white/10 font-semibold md:border-l-4 md:border-ciel md:pl-3' : 'text-white/80'}`
               }
             >
-              {l.label}
+              <Icone size={18} stroke={1.7} aria-hidden />
+              {label}
             </NavLink>
           ))}
-          <Link to="/admin/comptoir" className="m-2 md:m-3 rounded-xl bg-action text-marine font-bold text-sm px-3 py-2.5 whitespace-nowrap">
-            Ouvrir le comptoir
+          <Link to="/admin/comptoir" className="m-2 md:m-3 flex items-center gap-2 rounded-xl bg-action text-marine font-bold text-sm px-3 py-2.5 whitespace-nowrap">
+            <IconScan size={20} stroke={2} aria-hidden /> Ouvrir le comptoir
           </Link>
-          <button onClick={deconnexion} className="md:hidden whitespace-nowrap px-4 py-2.5 text-sm text-white/80 underline">
-            Se déconnecter
+          <button onClick={deconnexion} className="md:hidden flex items-center gap-1.5 whitespace-nowrap px-4 py-2.5 text-sm text-white/80">
+            <IconLogout size={18} aria-hidden /> Se déconnecter
           </button>
         </nav>
         <div className="hidden md:block px-4 py-4 text-xs border-t border-white/10">
