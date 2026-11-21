@@ -50,6 +50,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     profil: profil ?? null,
     chargement: !sessionPrete || (!!uid && isLoading),
     deconnexion: async () => {
+      // Confidentialité : la copie hors ligne des tickets ne doit pas rester pour le prochain utilisateur du téléphone.
+      try { localStorage.removeItem('tickets-hors-ligne') } catch { /* stockage indisponible */ }
       await supabase.auth.signOut()
       qc.clear()
     },

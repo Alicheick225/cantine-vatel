@@ -104,6 +104,7 @@ export default function Tickets() {
     <div className="min-h-full">
       <div className="bg-marine px-4 pt-6 pb-6 space-y-4">
         <h1 className="font-titre font-black text-2xl text-white">{tr('Mes tickets')}</h1>
+        {!navigator.onLine && <p className="rounded-xl bg-white/15 text-white text-sm px-3 py-2">{tr('Hors ligne : voici vos derniers tickets enregistrés.')}</p>}
         {isLoading && <Chargement />}
         {!isLoading && aVenir.length === 0 && <p className="text-sm text-white/80">{tr('Aucun repas à retirer. Réservez depuis le menu.')}</p>}
         {aVenir.map((t) => <GrandTicket key={t.id} t={t} nouveau={t.id === nouveau} />)}

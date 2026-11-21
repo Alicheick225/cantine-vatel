@@ -1,6 +1,8 @@
 import { NavLink, Outlet } from 'react-router-dom'
 import { IconTicket, IconToolsKitchen2, IconUser, IconWallet } from '@tabler/icons-react'
 import { useLangue } from '../lib/i18n'
+import { useMesTickets } from '../lib/donnees'
+import { useNotifications } from '../lib/notifications'
 
 // Les mêmes icônes que la maquette (Tabler Icons, contour).
 const ONGLETS = [
@@ -12,6 +14,8 @@ const ONGLETS = [
 
 export default function ConviveLayout() {
   const { t } = useLangue()
+  const { data: tickets } = useMesTickets()
+  useNotifications(tickets)
   return (
     <div className="min-h-dvh flex flex-col max-w-lg mx-auto bg-white">
       <main className="flex-1 pb-20">

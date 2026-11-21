@@ -123,6 +123,11 @@ const EN: Record<string, string> = {
   'Code à lui communiquer :': 'Code to give them:',
   'Valable 48 h, utilisable une seule fois.': 'Valid 48 h, single use.',
   'Générer un code de liaison': 'Generate a link code',
+  'Notifications': 'Notifications',
+  'Soyez prévenu(e) des offres anti-gaspillage et 10 minutes avant votre créneau.': 'Get notified of anti-waste deals and 10 minutes before your pickup slot.',
+  'Notifications activées.': 'Notifications enabled.',
+  'Activer les notifications': 'Enable notifications',
+  'Hors ligne : voici vos derniers tickets enregistrés.': 'Offline: here are your last saved tickets.',
   // Parent
   'Espace parent': 'Parent space',
   'Solde bas : pensez à recharger le compte de {p}.': 'Low balance: remember to top up {p}’s account.',

@@ -50,10 +50,26 @@ export function useMesTickets() {
         .select('id, jour, statut, prix_paye, est_offre, code_court, jeton_qr, scanne_le, creneau:creneaux(heure_debut), menu:menus_jour(plat:plats(nom, photo_url)), note:notes(valeur)')
         .order('jour', { ascending: false })
         .limit(60)
-      if (error) throw error
-      return (data ?? []) as unknown as Ticket[]
+      if (error) {
+        // Hors ligne : on réaffiche la dernière liste enregistrée (le QR se génère sans réseau).
+        const copie = lireCopieTickets()
+        if (copie && !navigator.onLine) return copie
+        throw error
+      }
+      const tickets = (data ?? []) as unknown as Ticket[]
+      try { localStorage.setItem('tickets-hors-ligne', JSON.stringify(tickets)) } catch { /* stockage indisponible */ }
+      return tickets
     },
   })
+}
+
+export function lireCopieTickets(): Ticket[] | null {
+  try {
+    const brut = localStorage.getItem('tickets-hors-ligne')
+    return brut ? (JSON.parse(brut) as Ticket[]) : null
+  } catch {
+    return null
+  }
 }
 
 export interface LignePlat {
