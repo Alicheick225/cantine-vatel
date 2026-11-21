@@ -155,6 +155,37 @@ Tablette (comptoir) ─┘                                            ├─ Aut
 
 C'est une statistique simple et **explicable au chef de cuisine**. Avec de vraies données sur plusieurs mois, on passerait à un modèle de séries temporelles.
 
+## Notifications push
+
+Les notifications arrivent **même quand l'application est fermée**, grâce au standard Web Push.
+
+| Notification | Qui la reçoit | Déclencheur |
+|---|---|---|
+| Offre anti-gaspi | Tous les convives abonnés | L'admin lance une offre de fin de service |
+| Rappel de créneau | Le convive | 10 minutes avant son créneau (vérification chaque minute par `pg_cron`) |
+| Solde bas | Le parent | Le solde de l'enfant passe sous 2 000 F (une fois par jour) |
+| Test | Soi-même | Bouton « M'envoyer une notification de test » dans le profil (8 secondes plus tard) |
+
+**Fonctionnement :**
+- **Abonnement :** l'appareil s'abonne au service push du navigateur. L'abonnement est enregistré par `enregistrer_abonnement`, et chacun ne voit que ses propres appareils.
+- **Envoi :** la fonction serveur `supabase/functions/push` signe chaque message avec les clés VAPID, chiffre son contenu et l'envoie. Elle retire les abonnements expirés.
+- **Protection :** la table `notifications_envoyees` évite les doublons. La fonction vérifie l'appelant : un admin pour une offre, un utilisateur connecté pour un test, et un secret pour `pg_cron`.
+
+**Configuration (votre propre projet) :**
+1. Générez une paire de clés VAPID.
+2. Mettez la clé publique dans `src/lib/notifications.ts`.
+3. Enregistrez les secrets :
+   ```bash
+   supabase secrets set VAPID_PUBLIC_KEY=… VAPID_PRIVATE_KEY=… VAPID_SUJET=https://votre-site PUSH_CRON_SECRET=…
+   ```
+4. Enregistrez le même secret de `pg_cron` dans Vault, en SQL :
+   ```sql
+   select vault.create_secret('…', 'push_cron_secret');
+   ```
+5. Adaptez l'URL de la fonction dans la migration `20261121230000_notifications_push.sql`.
+
+Les clés privées ne sont jamais dans le dépôt. Sur iPhone, le push demande d'installer l'application sur l'écran d'accueil (iOS 16.4 ou plus).
+
 ## Organisation du dépôt
 
 ```
@@ -163,12 +194,13 @@ src/
   layouts/     convive (barre en bas), admin (menu latéral)
   pages/       convive/ (menu, réservation, tickets, solde, profil), parent/ et admin/ (aujourd'hui, comptoir, passe, menus, plats, prévision, rapports, équipe, journal)
   components/  éléments d'interface (ticket, plat, boutons…)
-  lib/         client Supabase, accès aux données, temps réel, formats
+  lib/         client Supabase, accès aux données, temps réel, notifications, formats
 supabase/
   migrations/  schéma, sécurité, fonctions métier, tableau de bord, prévision (SQL versionné)
   seed.sql     données de référence
   demo/        historique de démo et historique simulé (6 semaines, 150 convives fictifs)
-  tests/       tests de sécurité, tests métier et tests de l'espace parent
+  tests/       tests de sécurité, métier, espace parent et rôles d'équipe
+  functions/   fonction serveur « push » (notifications push)
 ```
 
 ## Ce qui est simulé (et comment le rendre réel)
