@@ -6,7 +6,7 @@ import { useTempsReel } from '../../lib/temps-reel'
 import { ajouterJours, aujourdhui, fcfa, jourCourt, jourLong } from '../../lib/format'
 import { Alerte, BandeVatel, Chargement } from '../../components/ui'
 import { Pastilles, Photo, Prix } from '../../components/Plat'
-import { IconClock, IconLeaf } from '@tabler/icons-react'
+import { IconAlertTriangle, IconClock, IconLeaf } from '@tabler/icons-react'
 import type { PlatMenu } from '../../lib/types'
 
 export default function Menu() {
@@ -126,6 +126,11 @@ export default function Menu() {
                 <p className="text-xs opacity-90">
                   {vedette.description}{vedette.note_moyenne ? ` · ${vedette.note_moyenne} ★` : ''} · {vedette.restantes} restantes
                 </p>
+                {vedette.allergenes.some((x) => profil?.allergies.includes(x)) && (
+                  <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-white text-refus text-xs font-bold px-2 py-0.5">
+                    <IconAlertTriangle size={13} aria-hidden /> Contient : {vedette.allergenes.filter((x) => profil?.allergies.includes(x)).join(', ')}
+                  </span>
+                )}
               </div>
             </Link>
           )}

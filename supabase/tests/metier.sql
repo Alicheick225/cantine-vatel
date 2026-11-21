@@ -114,6 +114,10 @@ select 'Intégrité', 'Solde égal à la somme des transactions',
 from public.profils p left join public.transactions t on t.utilisateur_id = p.id
 where p.id = '00000000-0000-0000-0000-0000000000a1' group by p.solde;
 
+-- Créneau du soir (encore à venir) : l'offre n'est lançable que s'il reste un créneau.
+with c as (insert into public.creneaux (heure_debut, capacite) values ('23:52', 5) returning id)
+insert into ctx select 'creneau_soir', id::text from c;
+
 -- ===== Offre de fin de service : créneau déjà passé refusé (correctif du 21/11) =====
 set local role authenticated;
 select set_config('request.jwt.claims', '{"sub":"00000000-0000-0000-0000-0000000000d1","role":"authenticated"}', true);
@@ -129,10 +133,6 @@ begin
   end;
   insert into resultats (critere, test, resultat) values ('Métier', 'Offre de fin de service : créneau déjà passé refusé', m);
 end $$;
-reset role;
--- Créneau du soir (encore à venir) pour tester l'achat d'offres.
-with c as (insert into public.creneaux (heure_debut, capacite) values ('23:52', 5) returning id)
-insert into ctx select 'creneau_soir', id::text from c;
 set local role authenticated;
 select set_config('request.jwt.claims', '{"sub":"00000000-0000-0000-0000-0000000000a1","role":"authenticated"}', true);
 do $$
