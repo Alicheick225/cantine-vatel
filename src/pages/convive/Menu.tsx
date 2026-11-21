@@ -34,6 +34,21 @@ export default function Menu() {
   const vedette = principaux.find((p) => p.offre_active) ?? principaux.find((p) => p.photo_url)
   const autres = principaux.filter((p) => p !== vedette)
   const ticketDuJour = tickets?.find((t) => t.jour === jour && t.statut !== 'annulee')
+  // Choix anti-gaspi : parmi les plats compatibles avec le profil, celui qui risque le plus de rester.
+  const antiGaspi = !ticketDuJour
+    ? principaux
+        .filter((p) => (p.reservable || p.offre_active) && p.restantes >= 10)
+        .filter((p) => !p.allergenes.some((a) => profil?.allergies.includes(a)))
+        .filter((p) => !profil?.vegetarien || p.vegetarien)
+        .filter((p) => p !== vedette)
+        // Le plus de portions libres ; à égalité, le moins populaire d'habitude (il risque de rester).
+        .sort((a, b) => b.restantes / b.portions_prevues - a.restantes / a.portions_prevues || a.nb_notes - b.nb_notes)[0]
+    : undefined
+  // Rappel de créneau : le ticket du jour dont le créneau commence dans moins de 15 minutes.
+  const ticketAujourdhui = tickets?.find((t) => t.jour === debut && t.statut === 'reservee')
+  const minutesAvant = ticketAujourdhui?.creneau
+    ? (new Date(`${debut}T${ticketAujourdhui.creneau.heure_debut}Z`).getTime() - Date.now()) / 60000
+    : null
   const prenom = profil?.nom.split(' ')[0]
 
   return (
@@ -73,6 +88,14 @@ export default function Menu() {
         <div className="px-4 pt-2 space-y-3">
           <p className="text-sm text-encre-douce capitalize">{jourLong(jour)}</p>
 
+          {minutesAvant !== null && minutesAvant <= 15 && minutesAvant > -15 && (
+            <Link to="/tickets" className="block">
+              <Alerte type="info">
+                ⏰ Votre créneau {minutesAvant > 0 ? `commence dans ${Math.ceil(minutesAvant)} min` : 'est en cours'} : {ticketAujourdhui?.menu?.plat?.nom}. Préparez votre ticket →
+              </Alerte>
+            </Link>
+          )}
+
           {jour !== debut && parJour.get(debut)?.some((p) => p.offre_active) && (
             <button onClick={() => setChoisi(debut)} className="w-full text-left">
               <Alerte type="succes">Offre de fin de service en cours aujourd'hui : portions à prix réduit. Voir →</Alerte>
@@ -103,6 +126,15 @@ export default function Menu() {
                   {vedette.description}{vedette.note_moyenne ? ` · ${vedette.note_moyenne} ★` : ''} · {vedette.restantes} restantes
                 </p>
               </div>
+            </Link>
+          )}
+
+          {antiGaspi && (
+            <Link to={`/plat/${antiGaspi.menu_jour_id}`} className="flex items-center gap-3 rounded-2xl border border-valide/30 bg-valide-clair p-3">
+              <span aria-hidden className="text-xl">🌱</span>
+              <span className="text-sm">
+                <b className="text-valide">Choix anti-gaspi</b> : {antiGaspi.nom}, encore {antiGaspi.restantes} portions et compatible avec votre profil. Le choisir aide la cuisine à moins jeter.
+              </span>
             </Link>
           )}
 
