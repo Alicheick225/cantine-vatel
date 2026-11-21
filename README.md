@@ -119,6 +119,7 @@ supabase db query --remote -f supabase/tests/securite.sql   # tests de sécurit�
 supabase db query --remote -f supabase/tests/metier.sql     # tests métier
 supabase db query --remote -f supabase/tests/parent.sql     # tests de l'espace parent
 supabase db query --remote -f supabase/tests/equipe.sql     # tests des rôles d'équipe
+supabase db query --remote -f supabase/demo/tickets_scan.sql # 7 tickets de test du comptoir (VTL-9101 à 9107), relançable
 ```
 
 ## Organisation du dépôt
