@@ -1,0 +1,29 @@
+@import "tailwindcss";
+
+/* Charte « Vatel Abidjan, rendue lisible » (CONCEPTION.md, section 4).
+   Une couleur = un rôle. */
+@theme {
+  --color-marine: #072A5D;      /* structure, titres, ticket */
+  --color-action: #F59439;      /* seule couleur d'action, texte marine dessus */
+  --color-ciel: #67B2E8;        /* sélection, repères */
+  --color-ciel-clair: #E6F2FC;
+  --color-refus: #D93A3A;       /* refus et erreurs uniquement */
+  --color-valide: #1F7A4D;      /* valide, anti-gaspi */
+  --color-valide-clair: #E5F3EB;
+  --color-rare: #FFF0DC;        /* rareté : fond */
+  --color-rare-texte: #8A4B00;
+  --color-fond: #F2F4F7;
+  --color-encre: #1E2430;
+  --color-encre-douce: #5F6B7A;
+  --color-ligne: #E3E7EC;
+  --color-serie-1: #2B85BB;     /* graphiques */
+  --color-serie-2: #D9731A;
+
+  --font-titre: "Merriweather", Georgia, serif;
+  --font-sans: "Open Sans", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+}
+
+body {
+  @apply bg-fond text-encre font-sans antialiased;
+}
