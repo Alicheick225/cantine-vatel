@@ -24,7 +24,9 @@ Dans une cantine, la cuisine découvre la demande au moment du service. Elle pr�
 - Réservation avec choix du créneau (places restantes), un repas par jour, annulation remboursée jusqu'à **8h le jour même**. Les offres anti-gaspillage restent achetables même après avoir réservé, et plusieurs fois, pour que les restes trouvent preneur.
 - Ticket avec **QR code** et code court de secours.
 - Solde, historique des transactions, recharge Wave ou Orange Money (simulée).
-- Notation des repas servis, suggestion anti-gaspillage, rappel du créneau, offre de fin de service en temps réel.
+- Notation des repas servis, suggestion **« Pour vous »** selon ses goûts, **choix anti-gaspi**, offre de fin de service en temps réel.
+- **Notifications** (offre anti-gaspi lancée, rappel 10 minutes avant le créneau) et **mode hors ligne** du ticket.
+- **Français / anglais**, choix mémorisé.
 - Profil : allergies et régime végétarien.
 
 **Parent d'élève**
@@ -33,8 +35,10 @@ Dans une cantine, la cuisine découvre la demande au moment du service. Elle pr�
 
 **Administrateur, sur ordinateur et tablette**
 - **Aujourd'hui** : chiffres clés, commandes par plat **en direct**, affluence par créneau, suggestion anti-gaspillage et lancement d'une offre de fin de service.
-- **Comptoir** (tablette, plein écran) : scan du QR par caméra ou saisie du code court, puis écran **vert ou rouge**.
-- **Menus** de la semaine (portions prévues et préparées) et **plats** (création, prix, désactivation).
+- **Comptoir** (tablette, plein écran) : scan du QR par caméra ou saisie du code court, puis écran **vert ou rouge**, avec une alerte si le plat contient un allergène déclaré. Deux organisations au choix : une personne scanne et sert, ou bien on scanne à l'entrée et l'**écran du passe** affiche en direct les plats à remettre.
+- **Menus** de la semaine (portions prévues et préparées) et **plats** (création, prix, photo, désactivation).
+- **Alertes de rupture** : demande prévue supérieure aux portions prévues, plats presque épuisés.
+- **Rapport d'activité** sur une période, exportable en **CSV** et imprimable en **PDF**.
 - **Prévision** des repas, bouton « Appliquer au menu », suivi du **gaspillage** sur 6 semaines.
 - **Journal d'audit** : qui, quoi, quand, comment, où.
 
@@ -64,7 +68,7 @@ Tablette (comptoir) ─┘                                            ├─ Aut
 
 | Couche | Choix |
 |---|---|
-| Interface | React 19, Vite, TypeScript, Tailwind CSS 4, TanStack Query, React Router |
+| Interface | React 19, Vite, TypeScript, Tailwind CSS 4, TanStack Query, React Router, Tabler Icons |
 | QR code | `qrcode.react` (génération), `html5-qrcode` (lecture par caméra) |
 | Backend | Supabase : PostgreSQL, Auth, RLS, fonctions SQL, Realtime |
 | Déploiement | Vercel (déploiement à chaque push sur `main`) |
@@ -81,10 +85,10 @@ Tablette (comptoir) ─┘                                            ├─ Aut
 
 **Tests automatiques** (exécutés dans une transaction annulée, ils ne laissent aucune trace) :
 - `supabase/tests/securite.sql` : 12 tests (inscription en admin impossible, lecture des données d'autrui, modification du solde ou du rôle, écriture directe d'une transaction, immuabilité du journal…) ;
-- `supabase/tests/metier.sql` : 15 tests (recharge, réservation, limite de 8h, un repas par jour, annulation remboursée, scan vert puis rouge, cohérence solde / transactions…) ;
+- `supabase/tests/metier.sql` : 17 tests (recharge, réservation, limite de 8h, un repas par jour, annulation remboursée, scan vert puis rouge, cohérence solde / transactions…) ;
 - `supabase/tests/parent.sql` : 10 tests (liaison par code, le parent ne voit que son enfant, recharge tracée, refus d'un code invalide journalisé…).
 
-**Résultat : 37 tests sur 37 réussis.** S'y ajoute l'analyse de sécurité de Supabase (`supabase db advisors`). Les seuls avertissements restants concernent les fonctions métier, volontairement ouvertes aux utilisateurs connectés et qui contrôlent elles-mêmes le rôle, ainsi qu'une option d'authentification réservée aux offres payantes.
+**Résultat : 39 tests sur 39 réussis.** S'y ajoute l'analyse de sécurité de Supabase (`supabase db advisors`). Les seuls avertissements restants concernent les fonctions métier, volontairement ouvertes aux utilisateurs connectés et qui contrôlent elles-mêmes le rôle, ainsi qu'une option d'authentification réservée aux offres payantes.
 
 ## Prévision : comment elle fonctionne
 
