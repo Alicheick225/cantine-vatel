@@ -1,5 +1,6 @@
 import { LIBELLE_ALLERGENE, type Allergene, type PlatMenu } from '../lib/types'
 import { fcfa } from '../lib/format'
+import { useLangue } from '../lib/i18n'
 import { IconAlertTriangle, IconFlame } from '@tabler/icons-react'
 
 export function Photo({ url, nom, className = '' }: { url: string | null; nom: string; className?: string }) {
@@ -28,19 +29,20 @@ export function Prix({ plat }: { plat: PlatMenu }) {
 
 export function Pastilles({ plat, allergies }: { plat: PlatMenu; allergies: Allergene[] }) {
   const risque = allergenesARisque(plat, allergies)
+  const { t } = useLangue()
   return (
     <div className="flex flex-wrap gap-1.5 mt-1">
       {plat.note_moyenne && <span className="text-xs text-encre-douce">{plat.note_moyenne} ★ ({plat.nb_notes})</span>}
-      {plat.vegetarien && <span className="rounded-full bg-valide-clair text-valide text-xs px-2">Végétarien</span>}
-      {plat.offre_active && <span className="rounded-full bg-valide text-white text-xs px-2">Offre fin de service</span>}
+      {plat.vegetarien && <span className="rounded-full bg-valide-clair text-valide text-xs px-2">{t('Végétarien')}</span>}
+      {plat.offre_active && <span className="rounded-full bg-valide text-white text-xs px-2">{t('Offre fin de service')}</span>}
       {plat.restantes === 0 ? (
-        <span className="rounded-full bg-fond text-encre-douce text-xs px-2">Épuisé</span>
+        <span className="rounded-full bg-fond text-encre-douce text-xs px-2">{t('Épuisé')}</span>
       ) : plat.restantes <= 10 ? (
-        <span className="rounded-full bg-rare text-rare-texte text-xs font-bold px-2 inline-flex items-center gap-0.5"><IconFlame size={13} aria-hidden />Plus que {plat.restantes}</span>
+        <span className="rounded-full bg-rare text-rare-texte text-xs font-bold px-2 inline-flex items-center gap-0.5"><IconFlame size={13} aria-hidden />{t('Plus que {n}', { n: plat.restantes })}</span>
       ) : null}
       {risque.length > 0 && (
         <span className="rounded-full bg-refus/10 text-refus text-xs font-bold px-2 inline-flex items-center gap-0.5">
-          <IconAlertTriangle size={13} aria-hidden /> Contient : {risque.map((a) => LIBELLE_ALLERGENE[a].toLowerCase()).join(', ')}
+          <IconAlertTriangle size={13} aria-hidden /> {t('Contient : {liste}', { liste: risque.map((a) => t(LIBELLE_ALLERGENE[a].toLowerCase())).join(', ') })}
         </span>
       )}
     </div>

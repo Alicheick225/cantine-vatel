@@ -8,9 +8,11 @@ import { Alerte, BandeVatel, Chargement } from '../../components/ui'
 import { Pastilles, Photo, Prix } from '../../components/Plat'
 import { IconAlertTriangle, IconClock, IconHeart, IconLeaf } from '@tabler/icons-react'
 import type { PlatMenu } from '../../lib/types'
+import { useLangue } from '../../lib/i18n'
 
 export default function Menu() {
   const { profil } = useAuth()
+  const { t } = useLangue()
   const debut = aujourdhui()
   const fin = ajouterJours(debut, 13)
   const { data: menu, isLoading, error } = useMenu(debut, fin)
@@ -78,12 +80,12 @@ export default function Menu() {
             {fcfa(profil?.solde ?? 0)}
           </Link>
         </div>
-        <h1 className="font-titre font-black text-2xl mt-1">On mange quoi ?</h1>
+        <h1 className="font-titre font-black text-2xl mt-1">{t('On mange quoi ?')}</h1>
       </header>
       <BandeVatel />
 
-      {isLoading && <Chargement texte="Chargement du menu…" />}
-      {error && <div className="p-4"><Alerte>Impossible de charger le menu.</Alerte></div>}
+      {isLoading && <Chargement texte={t('Chargement du menu…')} />}
+      {error && <div className="p-4"><Alerte>{t('Impossible de charger le menu.')}</Alerte></div>}
 
       {jours.length > 0 && (
         <nav aria-label="Jours" className="flex gap-2 overflow-x-auto px-4 pt-3 pb-1">
@@ -96,7 +98,7 @@ export default function Menu() {
                 j === jour ? 'bg-ciel text-marine font-bold border-ciel' : 'bg-white border-ligne text-encre'
               }`}
             >
-              {j === debut ? "Aujourd'hui" : jourCourt(j)}
+              {j === debut ? t("Aujourd'hui") : jourCourt(j)}
             </button>
           ))}
         </nav>
@@ -109,21 +111,21 @@ export default function Menu() {
           {minutesAvant !== null && minutesAvant <= 15 && minutesAvant > -15 && (
             <Link to="/tickets" className="block">
               <Alerte type="info">
-                <IconClock size={16} className="inline -mt-0.5 mr-1" aria-hidden />Votre créneau {minutesAvant > 0 ? `commence dans ${Math.ceil(minutesAvant)} min` : 'est en cours'} : {ticketAujourdhui?.menu?.plat?.nom}. Préparez votre ticket →
+                <IconClock size={16} className="inline -mt-0.5 mr-1" aria-hidden />{minutesAvant > 0 ? t('Votre créneau commence dans {n} min', { n: Math.ceil(minutesAvant) }) : t('Votre créneau est en cours')} : {ticketAujourdhui?.menu?.plat?.nom}. {t('Préparez votre ticket →')}
               </Alerte>
             </Link>
           )}
 
           {jour !== debut && parJour.get(debut)?.some((p) => p.offre_active) && (
             <button onClick={() => setChoisi(debut)} className="w-full text-left">
-              <Alerte type="succes">Offre de fin de service en cours aujourd'hui : portions à prix réduit. Voir →</Alerte>
+              <Alerte type="succes">{t("Offre de fin de service en cours aujourd'hui : portions à prix réduit. Voir →")}</Alerte>
             </button>
           )}
 
           {ticketDuJour && (
             <Link to="/tickets" className="block">
               <Alerte type="succes">
-                Vous avez réservé : <b>{ticketDuJour.menu?.plat?.nom}</b> ({ticketDuJour.code_court}). Voir mon ticket →
+                {t('Vous avez réservé : {plat} ({code}). Voir mon ticket →', { plat: ticketDuJour.menu?.plat?.nom ?? '', code: ticketDuJour.code_court })}
               </Alerte>
             </Link>
           )}
@@ -133,7 +135,7 @@ export default function Menu() {
               <Photo url={vedette.photo_url} nom={vedette.nom} className="absolute inset-0 w-full h-full" />
               <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-marine/90" />
               <span className={`absolute top-3 left-3 rounded-full text-xs font-bold px-2.5 py-0.5 ${vedette.offre_active ? 'bg-valide text-white' : 'bg-white text-marine'}`}>
-                {vedette.offre_active ? 'Offre fin de service' : 'Plat du jour'}
+                {vedette.offre_active ? t('Offre fin de service') : t('Plat du jour')}
               </span>
               <div className="absolute inset-x-3 bottom-2.5 text-white">
                 <div className="flex justify-between items-end gap-2">
@@ -141,11 +143,11 @@ export default function Menu() {
                   <span className="font-mono">{fcfa(vedette.offre_active && vedette.prix_offre ? vedette.prix_offre : vedette.prix)}</span>
                 </div>
                 <p className="text-xs opacity-90">
-                  {vedette.description}{vedette.note_moyenne ? ` · ${vedette.note_moyenne} ★` : ''} · {vedette.restantes} restantes
+                  {vedette.description}{vedette.note_moyenne ? ` · ${vedette.note_moyenne} ★` : ''} · {t('{n} restantes', { n: vedette.restantes })}
                 </p>
                 {vedette.allergenes.some((x) => profil?.allergies.includes(x)) && (
                   <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-white text-refus text-xs font-bold px-2 py-0.5">
-                    <IconAlertTriangle size={13} aria-hidden /> Contient : {vedette.allergenes.filter((x) => profil?.allergies.includes(x)).join(', ')}
+                    <IconAlertTriangle size={13} aria-hidden /> {t('Contient : {liste}', { liste: vedette.allergenes.filter((x) => profil?.allergies.includes(x)).map((x) => t(x)).join(', ') })}
                   </span>
                 )}
               </div>
@@ -156,8 +158,8 @@ export default function Menu() {
             <Link to={`/plat/${pourVous.p.menu_jour_id}`} className="flex items-center gap-3 rounded-2xl border border-ciel/50 bg-ciel-clair p-3">
               <IconHeart size={24} className="text-marine shrink-0" aria-hidden />
               <span className="text-sm">
-                <b className="text-marine">Pour vous</b> : {pourVous.p.nom},{' '}
-                {pourVous.mienne >= 4 ? `vous l'avez noté ${pourVous.mienne} ★` : `très apprécié des convives (${pourVous.p.note_moyenne} ★)`}.
+                <b className="text-marine">{t('Pour vous')}</b> : {pourVous.p.nom},{' '}
+                {pourVous.mienne >= 4 ? t("vous l'avez noté {n} ★", { n: pourVous.mienne }) : t('très apprécié des convives ({n} ★)', { n: pourVous.p.note_moyenne ?? '' })}.
               </span>
             </Link>
           )}
@@ -166,7 +168,7 @@ export default function Menu() {
             <Link to={`/plat/${antiGaspi.menu_jour_id}`} className="flex items-center gap-3 rounded-2xl border border-valide/30 bg-valide-clair p-3">
               <IconLeaf size={24} className="text-valide shrink-0" aria-hidden />
               <span className="text-sm">
-                <b className="text-valide">Choix anti-gaspi</b> : {antiGaspi.nom}, encore {antiGaspi.restantes} portions et compatible avec votre profil. Le choisir aide la cuisine à moins jeter.
+                <b className="text-valide">{t('Choix anti-gaspi')}</b> : {antiGaspi.nom}, {t('encore {n} portions et compatible avec votre profil. Le choisir aide la cuisine à moins jeter.', { n: antiGaspi.restantes })}
               </span>
             </Link>
           )}
@@ -190,13 +192,13 @@ export default function Menu() {
 
           {boissons.length > 0 && (
             <p className="text-xs text-encre-douce pb-2">
-              Boissons en vente au comptoir : {boissons.map((b) => `${b.nom} (${fcfa(b.prix)})`).join(', ')}.
+              {t('Boissons en vente au comptoir : {liste}.', { liste: boissons.map((b) => `${b.nom} (${fcfa(b.prix)})`).join(', ') })}
             </p>
           )}
         </div>
       )}
 
-      {!isLoading && jours.length === 0 && <p className="p-6 text-sm text-encre-douce">Aucun menu publié pour les prochains jours.</p>}
+      {!isLoading && jours.length === 0 && <p className="p-6 text-sm text-encre-douce">{t('Aucun menu publié pour les prochains jours.')}</p>}
     </div>
   )
 }

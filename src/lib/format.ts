@@ -1,16 +1,17 @@
+import { locale } from './i18n'
 // Formats d'affichage : FCFA, dates et heures en français (Abidjan, UTC+0).
 export const fcfa = (n: number) => `${n.toLocaleString('fr-FR').replace(/ /g, ' ')} F`
 
 export const jourCourt = (iso: string) =>
-  new Date(iso + 'T12:00:00Z').toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', timeZone: 'UTC' })
+  new Date(iso + 'T12:00:00Z').toLocaleDateString(locale(), { weekday: 'short', day: 'numeric', timeZone: 'UTC' })
 
 export const jourLong = (iso: string) =>
-  new Date(iso + 'T12:00:00Z').toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' })
+  new Date(iso + 'T12:00:00Z').toLocaleDateString(locale(), { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' })
 
 export const heure = (hhmmss: string) => hhmmss.slice(0, 5)
 
 export const dateHeure = (iso: string) =>
-  new Date(iso).toLocaleString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Abidjan' })
+  new Date(iso).toLocaleString(locale(), { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Abidjan' })
 
 /** Date du jour à Abidjan, au format AAAA-MM-JJ. */
 export const aujourdhui = () => new Date().toLocaleDateString('en-CA', { timeZone: 'Africa/Abidjan' })

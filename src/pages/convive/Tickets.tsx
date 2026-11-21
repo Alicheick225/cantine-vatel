@@ -7,6 +7,7 @@ import { aujourdhui, fcfa, heure, jourLong, messageErreur } from '../../lib/form
 import { Alerte, BandeVatel, Bouton, Chargement } from '../../components/ui'
 import { Photo } from '../../components/Plat'
 import { IconCircleCheck } from '@tabler/icons-react'
+import { useLangue } from '../../lib/i18n'
 
 const limiteAnnulation = (jour: string) => new Date(`${jour}T08:00:00Z`) // 8h à Abidjan (UTC+0)
 
@@ -19,6 +20,7 @@ function statutAffiche(t: Ticket) {
 
 function GrandTicket({ t, nouveau }: { t: Ticket; nouveau: boolean }) {
   const qc = useQueryClient()
+  const { t: tr } = useLangue()
   const annuler = useMutation({
     mutationFn: async () => {
       const { error } = await supabase.rpc('annuler', { p_reservation: t.id })
@@ -35,7 +37,7 @@ function GrandTicket({ t, nouveau }: { t: Ticket; nouveau: boolean }) {
         <div className="min-w-0">
           <p className="font-bold text-marine">{t.menu?.plat?.nom}</p>
           <p className="text-xs text-encre-douce first-letter:uppercase">{jourLong(t.jour)} · {t.creneau ? heure(t.creneau.heure_debut) : ''}</p>
-          <span className="inline-flex items-center gap-1 mt-1 rounded-full bg-valide-clair text-valide text-xs font-bold px-2"><IconCircleCheck size={13} aria-hidden /> À retirer</span>
+          <span className="inline-flex items-center gap-1 mt-1 rounded-full bg-valide-clair text-valide text-xs font-bold px-2"><IconCircleCheck size={13} aria-hidden /> {tr('À retirer')}</span>
         </div>
       </div>
       <div className="relative h-4" aria-hidden>
@@ -46,17 +48,17 @@ function GrandTicket({ t, nouveau }: { t: Ticket; nouveau: boolean }) {
       <div className="px-4 pb-4 pt-2 text-center">
         <QRCodeSVG value={t.jeton_qr} size={168} fgColor="#072A5D" className="mx-auto" aria-label={`QR code du ticket ${t.code_court}`} />
         <p className="font-mono text-2xl tracking-widest text-marine mt-2">{t.code_court}</p>
-        <p className="text-xs text-encre-douce">À présenter au comptoir · {fcfa(t.prix_paye)} payé</p>
-        <p className="text-[11px] text-encre-douce mt-1">Pas de réseau au comptoir ? Faites une capture d'écran de ce ticket.</p>
-        {annuler.isError && <div className="mt-2"><Alerte>{messageErreur(annuler.error)}</Alerte></div>}
+        <p className="text-xs text-encre-douce">{tr('À présenter au comptoir · {prix} payé', { prix: fcfa(t.prix_paye) })}</p>
+        <p className="text-[11px] text-encre-douce mt-1">{tr("Pas de réseau au comptoir ? Faites une capture d'écran de ce ticket.")}</p>
+        {annuler.isError && <div className="mt-2"><Alerte>{tr(messageErreur(annuler.error))}</Alerte></div>}
         {annulable && (
           <Bouton
             variante="discret"
             className="mt-2"
             disabled={annuler.isPending}
-            onClick={() => window.confirm(`Annuler ce repas ? ${fcfa(t.prix_paye)} vous seront remboursés.`) && annuler.mutate()}
+            onClick={() => window.confirm(tr('Annuler ce repas ? {prix} vous seront remboursés.', { prix: fcfa(t.prix_paye) })) && annuler.mutate()}
           >
-            Annuler (remboursé)
+            {tr('Annuler (remboursé)')}
           </Bouton>
         )}
       </div>
@@ -67,6 +69,7 @@ function GrandTicket({ t, nouveau }: { t: Ticket; nouveau: boolean }) {
 
 function Etoiles({ t }: { t: Ticket }) {
   const qc = useQueryClient()
+  const { t: tr } = useLangue()
   const noter = useMutation({
     mutationFn: async (valeur: number) => {
       const { error } = await supabase.rpc('noter', { p_reservation: t.id, p_valeur: valeur })
@@ -75,11 +78,11 @@ function Etoiles({ t }: { t: Ticket }) {
     onSuccess: () => qc.invalidateQueries(),
   })
   const note = Array.isArray(t.note) ? t.note[0]?.valeur : t.note?.valeur
-  if (note) return <span className="text-xs text-action" aria-label={`Votre note : ${note} sur 5`}>{'★'.repeat(note)}{'☆'.repeat(5 - note)}</span>
-  if (noter.isError) return <span className="text-xs text-refus">{messageErreur(noter.error)}</span>
+  if (note) return <span className="text-xs text-action" aria-label={tr('Votre note : {n} sur 5', { n: note })}>{'★'.repeat(note)}{'☆'.repeat(5 - note)}</span>
+  if (noter.isError) return <span className="text-xs text-refus">{tr(messageErreur(noter.error))}</span>
   return (
     <span className="flex items-center gap-0.5" aria-label="Noter ce repas">
-      <span className="text-xs text-encre-douce mr-1">Noter :</span>
+      <span className="text-xs text-encre-douce mr-1">{tr('Noter :')}</span>
       {[1, 2, 3, 4, 5].map((v) => (
         <button key={v} disabled={noter.isPending} onClick={() => noter.mutate(v)} className="text-lg leading-none text-action" aria-label={`${v} étoile${v > 1 ? 's' : ''}`}>
           ☆
@@ -92,6 +95,7 @@ function Etoiles({ t }: { t: Ticket }) {
 export default function Tickets() {
   const { data: tickets, isLoading } = useMesTickets()
   const nouveau = (useLocation().state as { nouveau?: number } | null)?.nouveau
+  const { t: tr } = useLangue()
   const auj = aujourdhui()
   const aVenir = (tickets ?? []).filter((t) => t.statut === 'reservee' && t.jour >= auj).sort((a, b) => a.jour.localeCompare(b.jour))
   const historique = (tickets ?? []).filter((t) => !aVenir.includes(t))
@@ -99,14 +103,14 @@ export default function Tickets() {
   return (
     <div className="min-h-full">
       <div className="bg-marine px-4 pt-6 pb-6 space-y-4">
-        <h1 className="font-titre font-black text-2xl text-white">Mes tickets</h1>
+        <h1 className="font-titre font-black text-2xl text-white">{tr('Mes tickets')}</h1>
         {isLoading && <Chargement />}
-        {!isLoading && aVenir.length === 0 && <p className="text-sm text-white/80">Aucun repas à retirer. Réservez depuis le menu.</p>}
+        {!isLoading && aVenir.length === 0 && <p className="text-sm text-white/80">{tr('Aucun repas à retirer. Réservez depuis le menu.')}</p>}
         {aVenir.map((t) => <GrandTicket key={t.id} t={t} nouveau={t.id === nouveau} />)}
       </div>
       {historique.length > 0 && (
         <section className="px-4 py-4">
-          <h2 className="font-bold text-marine text-sm mb-2">Historique</h2>
+          <h2 className="font-bold text-marine text-sm mb-2">{tr('Historique')}</h2>
           <ul className="divide-y divide-ligne">
             {historique.map((t) => {
               const s = statutAffiche(t)
@@ -116,7 +120,7 @@ export default function Tickets() {
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between gap-2">
                       <span className="text-sm font-semibold truncate">{t.menu?.plat?.nom}</span>
-                      <span className={`rounded-full text-xs px-2 shrink-0 ${s.style}`}>{s.texte}</span>
+                      <span className={`rounded-full text-xs px-2 shrink-0 ${s.style}`}>{tr(s.texte)}</span>
                     </div>
                     <div className="flex justify-between gap-2 items-center">
                       <span className="text-xs text-encre-douce first-letter:uppercase">{jourLong(t.jour)}</span>

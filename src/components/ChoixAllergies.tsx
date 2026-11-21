@@ -1,10 +1,12 @@
 import { ALLERGENES, LIBELLE_ALLERGENE, type Allergene } from '../lib/types'
+import { useLangue } from '../lib/i18n'
 
 export default function ChoixAllergies({ valeur, onChange }: { valeur: Allergene[]; onChange: (v: Allergene[]) => void }) {
+  const { t } = useLangue()
   const basculer = (a: Allergene) => onChange(valeur.includes(a) ? valeur.filter((x) => x !== a) : [...valeur, a])
   return (
     <fieldset>
-      <legend className="text-sm font-semibold text-marine">Allergies (facultatif)</legend>
+      <legend className="text-sm font-semibold text-marine">{t('Allergies (facultatif)')}</legend>
       <div className="mt-2 flex flex-wrap gap-2">
         {ALLERGENES.map((a) => {
           const actif = valeur.includes(a)
@@ -16,7 +18,7 @@ export default function ChoixAllergies({ valeur, onChange }: { valeur: Allergene
               onClick={() => basculer(a)}
               className={`rounded-full px-3 py-1.5 text-sm border ${actif ? 'bg-marine text-white border-marine' : 'bg-white text-encre border-ligne'}`}
             >
-              {LIBELLE_ALLERGENE[a]}
+              {t(LIBELLE_ALLERGENE[a])}
             </button>
           )
         })}

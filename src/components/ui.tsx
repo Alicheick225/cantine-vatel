@@ -1,3 +1,4 @@
+import { useLangue } from '../lib/i18n'
 import type { ButtonHTMLAttributes, InputHTMLAttributes, ReactNode } from 'react'
 
 /** Bande signature aux couleurs de Vatel Abidjan. */
@@ -53,6 +54,7 @@ export function Alerte({ type = 'erreur', children }: { type?: 'erreur' | 'succe
   return <p role={type === 'erreur' ? 'alert' : 'status'} className={`rounded-xl border px-3 py-2 text-sm ${styles}`}>{children}</p>
 }
 
-export function Chargement({ texte = 'Chargement…' }: { texte?: string }) {
-  return <p className="p-6 text-center text-encre-douce text-sm">{texte}</p>
+export function Chargement({ texte }: { texte?: string }) {
+  const { t } = useLangue()
+  return <p className="p-6 text-center text-encre-douce text-sm">{texte ?? t('Chargement…')}</p>
 }
