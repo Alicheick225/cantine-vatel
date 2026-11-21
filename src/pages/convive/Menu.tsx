@@ -34,7 +34,7 @@ export default function Menu() {
   const boissons = plats.filter((p) => p.type === 'boisson')
   const vedette = principaux.find((p) => p.offre_active) ?? principaux.find((p) => p.photo_url)
   const autres = principaux.filter((p) => p !== vedette)
-  const ticketDuJour = tickets?.find((t) => t.jour === jour && t.statut !== 'annulee')
+  const ticketDuJour = tickets?.find((t) => t.jour === jour && t.statut !== 'annulee' && !t.est_offre)
   // Choix anti-gaspi : parmi les plats compatibles avec le profil, celui qui risque le plus de rester.
   const antiGaspi = !ticketDuJour
     ? principaux

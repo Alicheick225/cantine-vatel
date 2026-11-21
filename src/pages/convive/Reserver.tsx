@@ -39,12 +39,13 @@ export default function Reserver() {
 
   const prix = plat.offre_active && plat.prix_offre ? plat.prix_offre : plat.prix
   const solde = profil?.solde ?? 0
-  const dejaReserve = tickets?.find((t) => t.jour === plat.jour && t.statut !== 'annulee')
+  // Les offres anti-gaspillage ne comptent pas dans la limite d'un repas par jour.
+  const dejaReserve = tickets?.find((t) => t.jour === plat.jour && t.statut !== 'annulee' && !t.est_offre)
   const risque = allergenesARisque(plat, profil?.allergies ?? [])
   const choisi = creneaux?.find((c) => c.creneau_id === creneau)
   const bloque =
     plat.type === 'boisson' ? 'Les boissons sont en vente au comptoir.'
-    : dejaReserve ? `Vous avez déjà réservé ce jour-là (${dejaReserve.menu?.plat?.nom}).`
+    : dejaReserve && !plat.offre_active ? `Vous avez déjà réservé ce jour-là (${dejaReserve.menu?.plat?.nom}).`
     : !plat.reservable && !plat.offre_active ? 'Les réservations pour ce jour sont closes (limite : 8h le jour même).'
     : plat.restantes === 0 ? 'Plus de portion disponible pour ce plat.'
     : creneaux && creneaux.every((c) => c.passe || c.restantes === 0) ? 'Plus aucun créneau disponible ce jour-là.'

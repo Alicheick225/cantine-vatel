@@ -130,6 +130,24 @@ begin
   insert into resultats (critere, test, resultat) values ('Métier', 'Offre de fin de service : créneau déjà passé refusé', m);
 end $$;
 reset role;
+-- Créneau du soir (encore à venir) pour tester l'achat d'offres.
+with c as (insert into public.creneaux (heure_debut, capacite) values ('23:52', 5) returning id)
+insert into ctx select 'creneau_soir', id::text from c;
+set local role authenticated;
+select set_config('request.jwt.claims', '{"sub":"00000000-0000-0000-0000-0000000000a1","role":"authenticated"}', true);
+do $$
+declare v1 json; v2 json; m text;
+begin
+  -- Awa a déjà son repas du jour : elle peut quand même acheter l'offre anti-gaspillage, et plusieurs fois.
+  begin
+    v1 := public.reserver((select val::bigint from ctx where cle = 'menu_jour'), (select val::smallint from ctx where cle = 'creneau_soir'));
+    v2 := public.reserver((select val::bigint from ctx where cle = 'menu_jour'), (select val::smallint from ctx where cle = 'creneau_soir'));
+    m := case when (v1 ->> 'prix_paye')::int = 500 and (v2 ->> 'prix_paye')::int = 500 then 'OK' else 'ÉCHEC : ' || v1::text end;
+  exception when others then m := 'ÉCHEC : ' || sqlerrm;
+  end;
+  insert into resultats (critere, test, resultat) values ('Métier', 'Offre anti-gaspillage achetable deux fois, même avec un repas déjà réservé', m);
+end $$;
+reset role;
 
 -- ===== Awa note son repas =====
 set local role authenticated;

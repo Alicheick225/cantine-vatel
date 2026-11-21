@@ -21,7 +21,7 @@ Dans une cantine, la cuisine découvre la demande au moment du service. Elle pr�
 
 **Convive (étudiant ou personnel), sur téléphone**
 - Menu de la semaine avec photos, prix, notes, portions restantes (« Plus que 8 »), plats végétariens, et **alerte d'allergie** croisée avec le profil.
-- Réservation avec choix du créneau (places restantes), un repas par jour, annulation remboursée jusqu'à **8h le jour même**.
+- Réservation avec choix du créneau (places restantes), un repas par jour, annulation remboursée jusqu'à **8h le jour même**. Les offres anti-gaspillage restent achetables même après avoir réservé, et plusieurs fois, pour que les restes trouvent preneur.
 - Ticket avec **QR code** et code court de secours.
 - Solde, historique des transactions, recharge Wave ou Orange Money (simulée).
 - Notation des repas servis, suggestion anti-gaspillage, rappel du créneau, offre de fin de service en temps réel.
@@ -81,10 +81,10 @@ Tablette (comptoir) ─┘                                            ├─ Aut
 
 **Tests automatiques** (exécutés dans une transaction annulée, ils ne laissent aucune trace) :
 - `supabase/tests/securite.sql` : 12 tests (inscription en admin impossible, lecture des données d'autrui, modification du solde ou du rôle, écriture directe d'une transaction, immuabilité du journal…) ;
-- `supabase/tests/metier.sql` : 14 tests (recharge, réservation, limite de 8h, un repas par jour, annulation remboursée, scan vert puis rouge, cohérence solde / transactions…) ;
+- `supabase/tests/metier.sql` : 15 tests (recharge, réservation, limite de 8h, un repas par jour, annulation remboursée, scan vert puis rouge, cohérence solde / transactions…) ;
 - `supabase/tests/parent.sql` : 10 tests (liaison par code, le parent ne voit que son enfant, recharge tracée, refus d'un code invalide journalisé…).
 
-**Résultat : 36 tests sur 36 réussis.** S'y ajoute l'analyse de sécurité de Supabase (`supabase db advisors`). Les seuls avertissements restants concernent les fonctions métier, volontairement ouvertes aux utilisateurs connectés et qui contrôlent elles-mêmes le rôle, ainsi qu'une option d'authentification réservée aux offres payantes.
+**Résultat : 37 tests sur 37 réussis.** S'y ajoute l'analyse de sécurité de Supabase (`supabase db advisors`). Les seuls avertissements restants concernent les fonctions métier, volontairement ouvertes aux utilisateurs connectés et qui contrôlent elles-mêmes le rôle, ainsi qu'une option d'authentification réservée aux offres payantes.
 
 ## Prévision : comment elle fonctionne
 
