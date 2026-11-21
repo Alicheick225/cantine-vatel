@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../../lib/supabase'
 import { fcfa, messageErreur } from '../../lib/format'
@@ -7,7 +7,7 @@ import { Alerte, Bouton, Carte, Champ, Chargement } from '../../components/ui'
 import { Photo } from '../../components/Plat'
 import ChoixAllergies from '../../components/ChoixAllergies'
 import { envoyerPhotoPlat } from '../../lib/photos'
-import { IconPhotoUp } from '@tabler/icons-react'
+import { IconPencil, IconPhotoUp } from '@tabler/icons-react'
 
 interface Plat {
   id: number
@@ -33,31 +33,40 @@ export function usePlats() {
   })
 }
 
-function NouveauPlat() {
+/**
+ * Création d'un plat, ou modification d'un plat existant (nom, description, prix, type, allergènes, végétarien).
+ * Un plat n'est jamais supprimé ; chaque modification est horodatée et inscrite au journal d'audit par la base.
+ */
+function FormulairePlat({ plat, onFini }: { plat?: Plat; onFini?: () => void }) {
   const qc = useQueryClient()
-  const [nom, setNom] = useState('')
-  const [description, setDescription] = useState('')
-  const [prix, setPrix] = useState('')
-  const [type, setType] = useState<Plat['type']>('plat')
-  const [allergenes, setAllergenes] = useState<Allergene[]>([])
-  const [vegetarien, setVegetarien] = useState(false)
-  const creer = useMutation({
+  const ref = useRef<HTMLDivElement>(null)
+  const [nom, setNom] = useState(plat?.nom ?? '')
+  const [description, setDescription] = useState(plat?.description ?? '')
+  const [prix, setPrix] = useState(plat ? String(plat.prix) : '')
+  const [type, setType] = useState<Plat['type']>(plat?.type ?? 'plat')
+  const [allergenes, setAllergenes] = useState<Allergene[]>(plat?.allergenes ?? [])
+  const [vegetarien, setVegetarien] = useState(plat?.vegetarien ?? false)
+  useEffect(() => { if (plat) ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }) }, [plat])
+  const enregistrer = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.from('plats').insert({
-        nom: nom.trim(), description: description.trim() || null, prix: Number(prix), type, allergenes, vegetarien,
-      })
+      const champs = { nom: nom.trim(), description: description.trim() || null, prix: Number(prix), type, allergenes, vegetarien }
+      const { error } = plat
+        ? await supabase.from('plats').update(champs).eq('id', plat.id)
+        : await supabase.from('plats').insert(champs)
       if (error) throw error
     },
     onSuccess: () => {
-      setNom(''); setDescription(''); setPrix(''); setAllergenes([]); setVegetarien(false)
-      qc.invalidateQueries({ queryKey: ['plats'] })
+      if (!plat) { setNom(''); setDescription(''); setPrix(''); setAllergenes([]); setVegetarien(false) }
+      qc.invalidateQueries()
+      onFini?.()
     },
   })
-  const soumettre = (e: FormEvent) => { e.preventDefault(); creer.mutate() }
+  const soumettre = (e: FormEvent) => { e.preventDefault(); enregistrer.mutate() }
   return (
-    <Carte>
+    <div ref={ref} className="scroll-mt-4">
+    <Carte className={plat ? 'ring-2 ring-ciel' : ''}>
       <form onSubmit={soumettre} className="space-y-3">
-        <h2 className="font-bold text-marine">Nouveau plat</h2>
+        <h2 className="font-bold text-marine">{plat ? `Modifier « ${plat.nom} »` : 'Nouveau plat'}</h2>
         <div className="grid sm:grid-cols-[2fr_1fr_1fr] gap-3">
           <Champ label="Nom" required minLength={2} value={nom} onChange={(e) => setNom(e.target.value)} />
           <Champ label="Prix (F CFA)" required type="number" min={50} step={50} value={prix} onChange={(e) => setPrix(e.target.value)} />
@@ -73,17 +82,25 @@ function NouveauPlat() {
         <label className="flex items-center gap-2 text-sm">
           <input type="checkbox" checked={vegetarien} onChange={(e) => setVegetarien(e.target.checked)} className="size-4 accent-marine" /> Végétarien
         </label>
-        {creer.isError && <Alerte>{messageErreur(creer.error)}</Alerte>}
-        {creer.isSuccess && <Alerte type="succes">Plat ajouté.</Alerte>}
-        <Bouton type="submit" disabled={creer.isPending}>Ajouter le plat</Bouton>
+        {enregistrer.isError && <Alerte>{messageErreur(enregistrer.error)}</Alerte>}
+        {!plat && enregistrer.isSuccess && <Alerte type="succes">Plat ajouté.</Alerte>}
+        {plat && (allergenes.join() !== plat.allergenes.join()) && (
+          <Alerte type="info">Les allergènes changent : les convives allergiques seront alertés dès le prochain affichage du menu.</Alerte>
+        )}
+        <div className="flex gap-2">
+          <Bouton type="submit" disabled={enregistrer.isPending}>{plat ? 'Enregistrer les modifications' : 'Ajouter le plat'}</Bouton>
+          {plat && <button type="button" onClick={onFini} className="px-4 text-sm underline text-encre-douce">Annuler</button>}
+        </div>
       </form>
     </Carte>
+    </div>
   )
 }
 
 export default function Plats() {
   const qc = useQueryClient()
   const { data: plats, isLoading } = usePlats()
+  const [enEdition, setEnEdition] = useState<Plat | null>(null)
   const modifier = useMutation({
     mutationFn: async (m: { id: number; champs: Partial<Plat> }) => {
       const { error } = await supabase.from('plats').update(m.champs).eq('id', m.id)
@@ -103,15 +120,16 @@ export default function Plats() {
   return (
     <div className="space-y-4 max-w-5xl">
       <h1 className="font-titre font-black text-2xl text-marine">Plats</h1>
-      <p className="text-sm text-encre-douce">Un plat n'est jamais supprimé : on le désactive, pour garder l'historique des réservations et des notes. Touchez une photo pour la changer (elle est réduite automatiquement).</p>
+      <p className="text-sm text-encre-douce">Un plat n'est jamais supprimé : on le modifie ou on le désactive, pour garder l'historique des réservations et des notes. Touchez une photo pour la changer (elle est réduite automatiquement).</p>
       {modifier.isError && <Alerte>{messageErreur(modifier.error)}</Alerte>}
       {photo.isError && <Alerte>{messageErreur(photo.error)}</Alerte>}
       {photo.isPending && <Alerte type="info">Envoi de la photo…</Alerte>}
       {isLoading && <Chargement />}
+      {enEdition && <FormulairePlat key={enEdition.id} plat={enEdition} onFini={() => setEnEdition(null)} />}
       <Carte className="!p-0 overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="text-left text-xs text-encre-douce border-b border-ligne">
-            <tr><th className="p-3">Plat</th><th className="p-3">Type</th><th className="p-3">Allergènes</th><th className="p-3">Prix</th><th className="p-3">Statut</th></tr>
+            <tr><th className="p-3">Plat</th><th className="p-3">Type</th><th className="p-3">Allergènes</th><th className="p-3">Prix</th><th className="p-3">Statut</th><th className="p-3"><span className="sr-only">Modifier</span></th></tr>
           </thead>
           <tbody className="divide-y divide-ligne">
             {plats?.map((p) => (
@@ -148,12 +166,17 @@ export default function Plats() {
                     {p.actif ? 'Actif' : 'Désactivé'}
                   </button>
                 </td>
+                <td className="p-3">
+                  <button onClick={() => setEnEdition(p)} className="inline-flex items-center gap-1 rounded-lg border border-ligne px-2.5 py-1 text-xs font-semibold text-marine hover:bg-ciel-clair">
+                    <IconPencil size={14} aria-hidden /> Modifier
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
       </Carte>
-      <NouveauPlat />
+      <FormulairePlat />
     </div>
   )
 }
