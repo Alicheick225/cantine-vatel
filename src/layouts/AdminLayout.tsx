@@ -1,7 +1,9 @@
+import { Suspense } from 'react'
 import { NavLink, Outlet, Link } from 'react-router-dom'
 import { useAuth } from '../auth/AuthProvider'
-import { BandeVatel } from '../components/ui'
-import { IconBowlChopsticks, IconCalendarWeek, IconChartLine, IconLayoutDashboard, IconListSearch, IconLogout, IconReportAnalytics, IconScan, IconToolsKitchen2 } from '@tabler/icons-react'
+import { BandeVatel, Chargement } from '../components/ui'
+import { Logo } from '../components/Logo'
+import { IconBowlChopsticks, IconCalendarWeek, IconChartLine, IconLayoutDashboard, IconListSearch, IconLogout, IconReportAnalytics, IconScan, IconToolsKitchen2, IconUsersGroup } from '@tabler/icons-react'
 
 // Les mêmes icônes que la maquette admin (Tabler Icons, contour).
 const LIENS = [
@@ -10,6 +12,7 @@ const LIENS = [
   { to: '/admin/plats', label: 'Plats', Icone: IconBowlChopsticks },
   { to: '/admin/prevision', label: 'Prévision', Icone: IconChartLine },
   { to: '/admin/rapports', label: 'Rapports', Icone: IconReportAnalytics },
+  { to: '/admin/equipe', label: 'Équipe', Icone: IconUsersGroup },
   { to: '/admin/journal', label: "Journal d'audit", Icone: IconListSearch },
 ]
 
@@ -20,7 +23,7 @@ export default function AdminLayout() {
       <aside className="bg-marine text-white md:w-56 md:min-h-dvh flex md:flex-col print:hidden">
         <BandeVatel className="hidden md:block" />
         <div className="px-4 py-3 md:py-5 flex items-center gap-2">
-          <span className="w-8 h-8 rounded bg-white text-marine font-titre font-black flex items-center justify-center">V</span>
+          <Logo taille={34} className="ring-1 ring-white/20 rounded-lg shrink-0" />
           <div className="hidden md:block">
             <p className="font-titre font-black text-sm">Cantine Vatel</p>
             <p className="text-xs opacity-70">Abidjan · gestion</p>
@@ -56,7 +59,7 @@ export default function AdminLayout() {
         </div>
       </aside>
       <main className="flex-1 bg-fond p-4 md:p-6 min-w-0 print:bg-white print:p-0">
-        <Outlet />
+        <Suspense fallback={<Chargement />}><Outlet /></Suspense>
       </main>
     </div>
   )

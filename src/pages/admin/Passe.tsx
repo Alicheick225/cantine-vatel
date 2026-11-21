@@ -1,19 +1,21 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { IconAlertTriangle, IconCheck, IconX } from '@tabler/icons-react'
+import { IconAlertTriangle, IconCheck } from '@tabler/icons-react'
 import { supabase } from '../../lib/supabase'
 import { useTempsReel } from '../../lib/temps-reel'
-import { aujourdhui, messageErreur } from '../../lib/format'
+import { messageErreur } from '../../lib/format'
 import { LIBELLE_ALLERGENE, type Allergene } from '../../lib/types'
-import { BandeVatel } from '../../components/ui'
+import { BandeVatel, Quitter } from '../../components/ui'
 
 interface ALaFile {
   id: number
   code_court: string
   scanne_le: string
-  menu: { plat: { nom: string; allergenes: Allergene[] } | null } | null
-  convive: { nom: string; allergies: Allergene[]; vegetarien: boolean } | null
+  plat: string
+  allergenes_plat: Allergene[]
+  convive: string
+  allergies: Allergene[]
+  vegetarien: boolean
 }
 
 /** Écran du passe (configuration 2) : la file des tickets validés à l'entrée, du plus ancien au plus récent. */
@@ -28,17 +30,13 @@ export default function Passe() {
 
   const { data: file, error } = useQuery({
     queryKey: ['passe'],
-    refetchInterval: 20_000,
+    // La serveuse ne lit pas la table des réservations : la file lui arrive par une fonction dédiée,
+    // rafraîchie toutes les 4 secondes (et aussitôt en temps réel pour l'admin).
+    refetchInterval: 4_000,
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('reservations')
-        .select('id, code_court, scanne_le, menu:menus_jour(plat:plats(nom, allergenes)), convive:profils!reservations_utilisateur_id_fkey(nom, allergies, vegetarien)')
-        .eq('jour', aujourdhui())
-        .not('scanne_le', 'is', null)
-        .is('remis_le', null)
-        .order('scanne_le')
+      const { data, error } = await supabase.rpc('file_du_passe')
       if (error) throw error
-      return data as unknown as ALaFile[]
+      return data as ALaFile[]
     },
   })
   const remettre = useMutation({
@@ -58,7 +56,7 @@ export default function Passe() {
           <h1 className="font-titre font-black text-lg">Écran du passe</h1>
           <p className="text-sm opacity-85">{file?.length ?? 0} plat{(file?.length ?? 0) > 1 ? 's' : ''} à remettre · mis à jour en direct</p>
         </div>
-        <Link to="/admin" className="rounded-full bg-white/15 px-3 py-1 text-sm inline-flex items-center gap-1"><IconX size={14} /> Quitter</Link>
+        <Quitter />
       </header>
       {error && <p className="m-4 rounded-xl bg-refus px-3 py-2 text-sm">{messageErreur(error)}</p>}
       {remettre.isError && <p className="m-4 rounded-xl bg-refus px-3 py-2 text-sm">{messageErreur(remettre.error)}</p>}
@@ -71,21 +69,21 @@ export default function Passe() {
                 {attente(t.scanne_le) === 0 ? "à l'instant" : `il y a ${attente(t.scanne_le)} min`}
               </span>
             </div>
-            <p className="font-titre font-black text-2xl mt-1">{t.menu?.plat?.nom}</p>
-            <p className="text-sm text-encre-douce">{t.convive?.nom}</p>
-            {(t.menu?.plat?.allergenes ?? []).some((a) => t.convive?.allergies.includes(a)) && (
+            <p className="font-titre font-black text-2xl mt-1">{t.plat}</p>
+            <p className="text-sm text-encre-douce">{t.convive}</p>
+            {(t.allergenes_plat ?? []).some((a) => t.allergies.includes(a)) && (
               <p className="mt-2 rounded-lg bg-refus text-white font-bold text-sm px-2 py-1 inline-flex items-center gap-1">
                 <IconAlertTriangle size={14} /> Le plat contient un allergène déclaré : vérifier avant de servir
               </p>
             )}
-            {(t.convive?.allergies.length || t.convive?.vegetarien) ? (
+            {(t.allergies.length || t.vegetarien) ? (
               <div className="mt-2 flex flex-wrap gap-1.5">
-                {t.convive?.allergies.map((a) => (
+                {t.allergies.map((a) => (
                   <span key={a} className="rounded-lg bg-rare text-rare-texte font-bold text-sm px-2 py-0.5 inline-flex items-center gap-1">
                     <IconAlertTriangle size={14} /> Sans {LIBELLE_ALLERGENE[a].toLowerCase()}
                   </span>
                 ))}
-                {t.convive?.vegetarien && <span className="rounded-lg bg-valide-clair text-valide font-bold text-sm px-2 py-0.5">Végétarien</span>}
+                {t.vegetarien && <span className="rounded-lg bg-valide-clair text-valide font-bold text-sm px-2 py-0.5">Végétarien</span>}
               </div>
             ) : null}
             <button

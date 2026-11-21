@@ -1,4 +1,4 @@
-export type Role = 'convive' | 'admin' | 'parent'
+export type Role = 'convive' | 'admin' | 'parent' | 'scanneur' | 'serveur'
 export type Categorie = 'etudiant' | 'personnel'
 
 export const ALLERGENES = ['arachide', 'gluten', 'lait', 'oeuf', 'poisson', 'crustaces', 'soja', 'sesame'] as const

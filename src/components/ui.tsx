@@ -1,4 +1,8 @@
+import { Link } from 'react-router-dom'
+import { IconLogout, IconX } from '@tabler/icons-react'
+import { useAuth } from '../auth/AuthProvider'
 import { useLangue } from '../lib/i18n'
+import { Logo } from './Logo'
 import type { ButtonHTMLAttributes, InputHTMLAttributes, ReactNode } from 'react'
 
 /** Bande signature aux couleurs de Vatel Abidjan. */
@@ -57,4 +61,30 @@ export function Alerte({ type = 'erreur', children }: { type?: 'erreur' | 'succe
 export function Chargement({ texte }: { texte?: string }) {
   const { t } = useLangue()
   return <p className="p-6 text-center text-encre-douce text-sm">{texte ?? t('Chargement…')}</p>
+}
+
+/**
+ * Sortie des écrans du comptoir et du passe : l'admin revient à la gestion,
+ * la scanneuse et la serveuse (qui n'ont que cet écran) se déconnectent.
+ */
+export function Quitter() {
+  const { profil, deconnexion } = useAuth()
+  const classe = 'rounded-full bg-white/15 px-3 py-1 text-sm inline-flex items-center gap-1'
+  if (profil?.role === 'admin') return <Link to="/admin" className={classe}><IconX size={14} aria-hidden /> Quitter</Link>
+  return (
+    <span className="flex items-center gap-2 text-sm">
+      <span className="hidden sm:inline opacity-85">{profil?.nom}</span>
+      <button onClick={deconnexion} className={classe}><IconLogout size={14} aria-hidden /> Se déconnecter</button>
+    </span>
+  )
+}
+
+/** Écran de chargement plein écran (démarrage de l'application) : le même que dans index.html. */
+export function EcranChargement() {
+  return (
+    <div className="min-h-dvh bg-marine text-white flex flex-col items-center justify-center gap-4" role="status" aria-label="Chargement">
+      <Logo taille={96} fond={false} className="motion-safe:animate-pulse" />
+      <p className="font-titre font-black text-xl">Cantine Vatel</p>
+    </div>
+  )
 }

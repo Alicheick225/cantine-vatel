@@ -99,6 +99,19 @@ export interface TableauBord {
   creneaux: { heure_debut: string; reservees: number; servies: number }[]
 }
 
+/** Servis / attendus du jour, pour toute l'équipe du comptoir (sans les recettes du tableau de bord). */
+export function useCompteurService() {
+  return useQuery({
+    queryKey: ['compteur-service'],
+    refetchInterval: 15_000,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('compteur_service')
+      if (error) throw error
+      return data as { reservees: number; servies: number }
+    },
+  })
+}
+
 export function useTableauBord(jour: string) {
   return useQuery({
     queryKey: ['tableau', jour],

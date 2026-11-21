@@ -75,7 +75,7 @@ begin
     case when (v ->> 'solde')::int = 2000 then 'OK' else 'ÉCHEC : ' || v::text end);
 
   begin perform public.servir('VTL-9042'); m := 'ÉCHEC';
-  exception when others then m := case when sqlerrm like '%administrateur%' then 'OK' else 'ÉCHEC : ' || sqlerrm end; end;
+  exception when others then m := case when sqlerrm like '%équipe du comptoir%' then 'OK' else 'ÉCHEC : ' || sqlerrm end; end;
   insert into resultats (critere, test, resultat) values ('Confidentialité', 'Un convive ne peut pas valider son propre ticket', m);
 end $$;
 

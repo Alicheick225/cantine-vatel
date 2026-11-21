@@ -9,7 +9,7 @@ import Menu from './pages/convive/Menu'
 import Reserver from './pages/convive/Reserver'
 import Tickets from './pages/convive/Tickets'
 import Solde from './pages/convive/Solde'
-import { Chargement } from './components/ui'
+import { EcranChargement } from './components/ui'
 
 // Chargés à la demande : un convive sur téléphone ne télécharge jamais l'admin,
 // le lecteur de QR du comptoir ni l'espace parent (réseau mobile lent).
@@ -22,11 +22,12 @@ const Prevision = lazy(() => import('./pages/admin/Prevision'))
 const Journal = lazy(() => import('./pages/admin/Journal'))
 const Rapports = lazy(() => import('./pages/admin/Rapports'))
 const Passe = lazy(() => import('./pages/admin/Passe'))
+const Equipe = lazy(() => import('./pages/admin/Equipe'))
 const Parent = lazy(() => import('./pages/parent/Parent'))
 
 export default function App() {
   return (
-    <Suspense fallback={<Chargement />}>
+    <Suspense fallback={<EcranChargement />}>
     <Routes>
       <Route path="/connexion" element={<Connexion />} />
       <Route path="/inscription" element={<Inscription />} />
@@ -47,10 +48,16 @@ export default function App() {
         <Route path="/parent" element={<Parent />} />
       </Route>
 
-      {/* Administrateur */}
-      <Route element={<Garde roles={['admin']} />}>
+      {/* Équipe du comptoir : le super-admin peut tout faire, la scanneuse scanne, la serveuse sert. */}
+      <Route element={<Garde roles={['admin', 'scanneur']} />}>
         <Route path="/admin/comptoir" element={<Comptoir />} />
+      </Route>
+      <Route element={<Garde roles={['admin', 'serveur']} />}>
         <Route path="/admin/passe" element={<Passe />} />
+      </Route>
+
+      {/* Administrateur (super-admin) */}
+      <Route element={<Garde roles={['admin']} />}>
         <Route element={<AdminLayout />}>
           <Route path="/admin" element={<Aujourdhui />} />
           <Route path="/admin/menus" element={<Menus />} />
@@ -58,6 +65,7 @@ export default function App() {
           <Route path="/admin/prevision" element={<Prevision />} />
           <Route path="/admin/journal" element={<Journal />} />
           <Route path="/admin/rapports" element={<Rapports />} />
+          <Route path="/admin/equipe" element={<Equipe />} />
         </Route>
       </Route>
 

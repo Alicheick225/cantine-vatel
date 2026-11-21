@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
-import { Link } from 'react-router-dom'
 import { Html5Qrcode } from 'html5-qrcode'
 import { supabase } from '../../lib/supabase'
-import { useTableauBord } from '../../lib/donnees'
+import { useAuth } from '../../auth/AuthProvider'
+import { useCompteurService } from '../../lib/donnees'
 import { useTempsReel } from '../../lib/temps-reel'
 import { aujourdhui, jourLong, messageErreur } from '../../lib/format'
 import { LIBELLE_ALLERGENE, type Allergene } from '../../lib/types'
-import { BandeVatel } from '../../components/ui'
+import { BandeVatel, Quitter } from '../../components/ui'
 import { IconAlertTriangle, IconArrowRight, IconCheck, IconX } from '@tabler/icons-react'
 
 interface InfoTicket {
@@ -42,21 +42,25 @@ const heureAbidjan = (iso: string) =>
   new Date(iso).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Abidjan' })
 
 export default function Comptoir() {
+  const { profil } = useAuth()
+  // La scanneuse ne fait que valider l'entrée (la base l'impose aussi) ; seul l'admin choisit l'organisation.
+  const scanneuse = profil?.role === 'scanneur'
   const [resultat, setResultat] = useState<Resultat | null>(null)
   const [code, setCode] = useState('')
   const [erreur, setErreur] = useState<string | null>(null)
   const [cameraKo, setCameraKo] = useState<string | null>(null)
   // Configuration 1 : une personne scanne et sert. Configuration 2 : on scanne à l'entrée, un collègue sert au passe.
-  const [mode, setMode] = useState<'unique' | 'entree'>(() => {
+  const [modeChoisi, setMode] = useState<'unique' | 'entree'>(() => {
     try { return localStorage.getItem('comptoir-mode') === 'entree' ? 'entree' : 'unique' } catch { return 'unique' }
   })
+  const mode = scanneuse ? 'entree' : modeChoisi
   const changerMode = (m: 'unique' | 'entree') => {
     setMode(m)
     try { localStorage.setItem('comptoir-mode', m) } catch { /* stockage indisponible : le choix reste pour la session */ }
   }
   const enCours = useRef(false)
   const dernier = useRef<{ texte: string; t: number }>({ texte: '', t: 0 })
-  const { data: tb } = useTableauBord(aujourdhui())
+  const { data: tb } = useCompteurService()
   useTempsReel('comptoir')
 
   const valider = useCallback(async (texte: string) => {
@@ -112,8 +116,8 @@ export default function Comptoir() {
     <div className="min-h-dvh bg-marine text-white flex flex-col">
       <BandeVatel />
       <header className="flex items-center justify-between px-4 pt-4">
-        <h1 className="font-titre font-black text-lg">Comptoir</h1>
-        <Link to="/admin" className="rounded-full bg-white/15 px-3 py-1 text-sm inline-flex items-center gap-1"><IconX size={14} /> Quitter</Link>
+        <h1 className="font-titre font-black text-lg">{scanneuse ? "Contrôle à l'entrée" : 'Comptoir'}</h1>
+        <Quitter />
       </header>
       <p className="px-4 pt-1 text-sm opacity-85 flex justify-between">
         <span className="first-letter:uppercase">{jourLong(aujourdhui())}</span>
@@ -126,12 +130,12 @@ export default function Comptoir() {
           {cameraKo && <p className="absolute inset-0 flex items-center justify-center text-center p-6 text-sm opacity-90">{cameraKo}</p>}
         </div>
         <p className="text-sm opacity-85">Placez le QR code du ticket devant la caméra</p>
-        <div className="w-full grid grid-cols-2 gap-1 rounded-xl bg-white/10 p-1 text-xs" role="group" aria-label="Organisation du comptoir">
+        {!scanneuse && <div className="w-full grid grid-cols-2 gap-1 rounded-xl bg-white/10 p-1 text-xs" role="group" aria-label="Organisation du comptoir">
           {([['unique', 'Je scanne et je sers'], ['entree', "Je scanne à l'entrée (passe)"]] as const).map(([m, l]) => (
             <button key={m} onClick={() => changerMode(m)} aria-pressed={mode === m}
               className={`rounded-lg py-2 font-semibold ${mode === m ? 'bg-white text-marine' : 'text-white/80'}`}>{l}</button>
           ))}
-        </div>
+        </div>}
         <form onSubmit={soumettre} className="w-full flex gap-2">
           <label className="flex-1 flex items-center bg-white rounded-xl px-3">
             <span className="font-mono text-marine text-lg">VTL-</span>
