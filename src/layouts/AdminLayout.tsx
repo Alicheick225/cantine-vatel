@@ -39,6 +39,9 @@ export default function AdminLayout() {
           <Link to="/admin/comptoir" className="m-2 md:m-3 rounded-xl bg-action text-marine font-bold text-sm px-3 py-2.5 whitespace-nowrap">
             Ouvrir le comptoir
           </Link>
+          <button onClick={deconnexion} className="md:hidden whitespace-nowrap px-4 py-2.5 text-sm text-white/80 underline">
+            Se déconnecter
+          </button>
         </nav>
         <div className="hidden md:block px-4 py-4 text-xs border-t border-white/10">
           <p className="font-semibold">{profil?.nom}</p>

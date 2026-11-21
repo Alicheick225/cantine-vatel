@@ -5,6 +5,10 @@ import AdminLayout from './layouts/AdminLayout'
 import Connexion from './pages/Connexion'
 import Inscription from './pages/Inscription'
 import Profil from './pages/convive/Profil'
+import Menu from './pages/convive/Menu'
+import Reserver from './pages/convive/Reserver'
+import Tickets from './pages/convive/Tickets'
+import Solde from './pages/convive/Solde'
 import Bientot from './components/Bientot'
 
 export default function App() {
@@ -16,9 +20,10 @@ export default function App() {
       {/* Convive : étudiant ou personnel */}
       <Route element={<Garde roles={['convive']} />}>
         <Route element={<ConviveLayout />}>
-          <Route path="/" element={<Bientot titre="On mange quoi ?" />} />
-          <Route path="/tickets" element={<Bientot titre="Mes tickets" />} />
-          <Route path="/solde" element={<Bientot titre="Mon solde" />} />
+          <Route path="/" element={<Menu />} />
+          <Route path="/plat/:id" element={<Reserver />} />
+          <Route path="/tickets" element={<Tickets />} />
+          <Route path="/solde" element={<Solde />} />
           <Route path="/profil" element={<Profil />} />
         </Route>
       </Route>

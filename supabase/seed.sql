@@ -1,7 +1,7 @@
 -- =============================================================================
 -- Données de référence et menus de démonstration (rejouable sans doublon).
 -- Lancement : supabase db query --remote --yes -f supabase/seed.sql
--- Photos : Wikimedia Commons, licences libres (crédits dans le README).
+-- Photos : Wikimedia Commons, licences libres, copies allégées servies par l'application (public/plats, crédits dans le README).
 -- =============================================================================
 select set_config('app.operation', 'donnees_demo', false);
 
@@ -15,17 +15,17 @@ on conflict (heure_debut) do nothing;
 insert into public.plats (nom, description, prix, type, allergenes, vegetarien, photo_url)
 select v.* from (values
   ('Garba', 'Attiéké, thon frit, piment et oignons', 1000, 'plat'::public.type_plat, '{poisson}'::text[], false,
-   'https://thumb.wikimedia.org/wikipedia/commons/thumb/7/73/Le_Garba.jpg/960px-Le_Garba.jpg'),
+   '/plats/garba.jpg'),
   ('Kédjénou de poulet', 'Poulet mijoté à l''étouffée, riz blanc', 2500, 'plat', '{}', false,
-   'https://thumb.wikimedia.org/wikipedia/commons/thumb/2/27/Kedjenou_poulet_sauce_claire.JPG/960px-Kedjenou_poulet_sauce_claire.JPG'),
+   '/plats/kedjenou.jpg'),
   ('Alloco poulet braisé', 'Bananes plantains frites, poulet braisé, sauce tomate', 2000, 'plat', '{}', false,
-   'https://upload.wikimedia.org/wikipedia/commons/f/fb/Aloko.jpg'),
+   '/plats/alloco.jpg'),
   ('Riz sauce graine', 'Sauce graine de palme, viande de bœuf', 1500, 'plat', '{}', false,
-   'https://thumb.wikimedia.org/wikipedia/commons/thumb/9/92/Sauce_graine_02.jpg/960px-Sauce_graine_02.jpg'),
+   '/plats/sauce-graine.jpg'),
   ('Attiéké poisson braisé', 'Attiéké, poisson braisé, crudités', 2000, 'plat', '{poisson}', false,
-   'https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e2/Atti%C3%A9k%C3%A9_poisson_fum%C3%A9.jpg/960px-Atti%C3%A9k%C3%A9_poisson_fum%C3%A9.jpg'),
+   '/plats/attieke-poisson.jpg'),
   ('Placali sauce kopè', 'Placali, sauce gombo kopè au poisson fumé', 1500, 'plat', '{poisson}', false,
-   'https://upload.wikimedia.org/wikipedia/commons/7/7f/Placali_%C3%A0_la_sauce_k%C3%B4p%C3%AA.jpg'),
+   '/plats/placali.jpg'),
   ('Alloco œuf', 'Bananes plantains frites, œufs, sauce tomate pimentée', 1000, 'plat', '{oeuf}', true, null),
   ('Bissap', 'Jus de fleurs d''hibiscus, menthe', 300, 'boisson', '{}', true, null)
 ) as v(nom, description, prix, type, allergenes, vegetarien, photo_url)
