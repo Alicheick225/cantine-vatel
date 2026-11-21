@@ -74,8 +74,9 @@ function Etoiles({ t }: { t: Ticket }) {
     },
     onSuccess: () => qc.invalidateQueries(),
   })
-  const note = t.note?.[0]?.valeur
-  if (note) return <span className="text-xs text-encre-douce">Votre note : {'★'.repeat(note)}</span>
+  const note = Array.isArray(t.note) ? t.note[0]?.valeur : t.note?.valeur
+  if (note) return <span className="text-xs text-action" aria-label={`Votre note : ${note} sur 5`}>{'★'.repeat(note)}{'☆'.repeat(5 - note)}</span>
+  if (noter.isError) return <span className="text-xs text-refus">{messageErreur(noter.error)}</span>
   return (
     <span className="flex items-center gap-0.5" aria-label="Noter ce repas">
       <span className="text-xs text-encre-douce mr-1">Noter :</span>

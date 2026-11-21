@@ -36,7 +36,8 @@ export interface Ticket {
   scanne_le: string | null
   creneau: { heure_debut: string } | null
   menu: { plat: { nom: string; photo_url: string | null } | null } | null
-  note: { valeur: number }[] | null
+  // Une seule note par réservation : la base la renvoie comme un objet (parfois comme une liste).
+  note: { valeur: number } | { valeur: number }[] | null
 }
 
 /** Les réservations du convive connecté (la RLS ne renvoie que les siennes). */
