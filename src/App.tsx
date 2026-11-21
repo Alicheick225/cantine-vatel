@@ -12,6 +12,8 @@ import Solde from './pages/convive/Solde'
 import Bientot from './components/Bientot'
 import Aujourdhui from './pages/admin/Aujourdhui'
 import Comptoir from './pages/admin/Comptoir'
+import Menus from './pages/admin/Menus'
+import Plats from './pages/admin/Plats'
 
 export default function App() {
   return (
@@ -35,8 +37,8 @@ export default function App() {
         <Route path="/admin/comptoir" element={<Comptoir />} />
         <Route element={<AdminLayout />}>
           <Route path="/admin" element={<Aujourdhui />} />
-          <Route path="/admin/menus" element={<Bientot titre="Menus" />} />
-          <Route path="/admin/plats" element={<Bientot titre="Plats" />} />
+          <Route path="/admin/menus" element={<Menus />} />
+          <Route path="/admin/plats" element={<Plats />} />
           <Route path="/admin/prevision" element={<Bientot titre="Prévision" />} />
           <Route path="/admin/journal" element={<Bientot titre="Journal d'audit" />} />
         </Route>

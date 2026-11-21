@@ -1,0 +1,142 @@
+import { useState, type FormEvent } from 'react'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { supabase } from '../../lib/supabase'
+import { fcfa, messageErreur } from '../../lib/format'
+import { LIBELLE_ALLERGENE, type Allergene } from '../../lib/types'
+import { Alerte, Bouton, Carte, Champ, Chargement } from '../../components/ui'
+import { Photo } from '../../components/Plat'
+import ChoixAllergies from '../../components/ChoixAllergies'
+
+interface Plat {
+  id: number
+  nom: string
+  description: string | null
+  prix: number
+  type: 'plat' | 'accompagnement' | 'boisson' | 'dessert'
+  allergenes: Allergene[]
+  vegetarien: boolean
+  photo_url: string | null
+  actif: boolean
+}
+const TYPES = { plat: 'Plat', accompagnement: 'Accompagnement', boisson: 'Boisson', dessert: 'Dessert' } as const
+
+export function usePlats() {
+  return useQuery({
+    queryKey: ['plats'],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('plats').select('*').order('actif', { ascending: false }).order('type').order('nom')
+      if (error) throw error
+      return data as Plat[]
+    },
+  })
+}
+
+function NouveauPlat() {
+  const qc = useQueryClient()
+  const [nom, setNom] = useState('')
+  const [description, setDescription] = useState('')
+  const [prix, setPrix] = useState('')
+  const [type, setType] = useState<Plat['type']>('plat')
+  const [allergenes, setAllergenes] = useState<Allergene[]>([])
+  const [vegetarien, setVegetarien] = useState(false)
+  const creer = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.from('plats').insert({
+        nom: nom.trim(), description: description.trim() || null, prix: Number(prix), type, allergenes, vegetarien,
+      })
+      if (error) throw error
+    },
+    onSuccess: () => {
+      setNom(''); setDescription(''); setPrix(''); setAllergenes([]); setVegetarien(false)
+      qc.invalidateQueries({ queryKey: ['plats'] })
+    },
+  })
+  const soumettre = (e: FormEvent) => { e.preventDefault(); creer.mutate() }
+  return (
+    <Carte>
+      <form onSubmit={soumettre} className="space-y-3">
+        <h2 className="font-bold text-marine">Nouveau plat</h2>
+        <div className="grid sm:grid-cols-[2fr_1fr_1fr] gap-3">
+          <Champ label="Nom" required minLength={2} value={nom} onChange={(e) => setNom(e.target.value)} />
+          <Champ label="Prix (F CFA)" required type="number" min={50} step={50} value={prix} onChange={(e) => setPrix(e.target.value)} />
+          <label className="block">
+            <span className="text-sm font-semibold text-marine">Type</span>
+            <select value={type} onChange={(e) => setType(e.target.value as Plat['type'])} className="mt-1 w-full rounded-xl border border-ligne bg-white px-3 py-2.5">
+              {Object.entries(TYPES).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+            </select>
+          </label>
+        </div>
+        <Champ label="Description" value={description} onChange={(e) => setDescription(e.target.value)} />
+        <ChoixAllergies valeur={allergenes} onChange={setAllergenes} />
+        <label className="flex items-center gap-2 text-sm">
+          <input type="checkbox" checked={vegetarien} onChange={(e) => setVegetarien(e.target.checked)} className="size-4 accent-marine" /> Végétarien
+        </label>
+        {creer.isError && <Alerte>{messageErreur(creer.error)}</Alerte>}
+        {creer.isSuccess && <Alerte type="succes">Plat ajouté.</Alerte>}
+        <Bouton type="submit" disabled={creer.isPending}>Ajouter le plat</Bouton>
+      </form>
+    </Carte>
+  )
+}
+
+export default function Plats() {
+  const qc = useQueryClient()
+  const { data: plats, isLoading } = usePlats()
+  const modifier = useMutation({
+    mutationFn: async (m: { id: number; champs: Partial<Plat> }) => {
+      const { error } = await supabase.from('plats').update(m.champs).eq('id', m.id)
+      if (error) throw error
+    },
+    onSuccess: () => qc.invalidateQueries(),
+  })
+
+  return (
+    <div className="space-y-4 max-w-5xl">
+      <h1 className="font-titre font-black text-2xl text-marine">Plats</h1>
+      <p className="text-sm text-encre-douce">Un plat n'est jamais supprimé : on le désactive, pour garder l'historique des réservations et des notes.</p>
+      {modifier.isError && <Alerte>{messageErreur(modifier.error)}</Alerte>}
+      {isLoading && <Chargement />}
+      <Carte className="!p-0 overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead className="text-left text-xs text-encre-douce border-b border-ligne">
+            <tr><th className="p-3">Plat</th><th className="p-3">Type</th><th className="p-3">Allergènes</th><th className="p-3">Prix</th><th className="p-3">Statut</th></tr>
+          </thead>
+          <tbody className="divide-y divide-ligne">
+            {plats?.map((p) => (
+              <tr key={p.id} className={p.actif ? '' : 'opacity-50'}>
+                <td className="p-3">
+                  <div className="flex items-center gap-2.5">
+                    <Photo url={p.photo_url} nom={p.nom} className="w-9 h-9 rounded-lg shrink-0" />
+                    <div>
+                      <b>{p.nom}</b>{p.vegetarien && <span className="ml-1.5 rounded-full bg-valide-clair text-valide text-xs px-2">Végétarien</span>}
+                      <p className="text-xs text-encre-douce">{p.description}</p>
+                    </div>
+                  </div>
+                </td>
+                <td className="p-3">{TYPES[p.type]}</td>
+                <td className="p-3 text-xs">{p.allergenes.map((a) => LIBELLE_ALLERGENE[a]).join(', ') || '—'}</td>
+                <td className="p-3">
+                  <input
+                    type="number" min={50} step={50} defaultValue={p.prix} aria-label={`Prix de ${p.nom}`}
+                    onBlur={(e) => Number(e.target.value) !== p.prix && Number(e.target.value) > 0 && modifier.mutate({ id: p.id, champs: { prix: Number(e.target.value) } })}
+                    className="w-24 rounded-lg border border-ligne px-2 py-1 font-mono"
+                  />
+                  <span className="sr-only">{fcfa(p.prix)}</span>
+                </td>
+                <td className="p-3">
+                  <button
+                    onClick={() => modifier.mutate({ id: p.id, champs: { actif: !p.actif } })}
+                    className={`rounded-full px-3 py-1 text-xs font-semibold ${p.actif ? 'bg-valide-clair text-valide' : 'bg-fond text-encre-douce'}`}
+                  >
+                    {p.actif ? 'Actif' : 'Désactivé'}
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </Carte>
+      <NouveauPlat />
+    </div>
+  )
+}
