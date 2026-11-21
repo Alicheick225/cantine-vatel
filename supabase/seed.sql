@@ -26,8 +26,8 @@ select v.* from (values
    '/plats/attieke-poisson.jpg'),
   ('Placali sauce kopè', 'Placali, sauce gombo kopè au poisson fumé', 1500, 'plat', '{poisson}', false,
    '/plats/placali.jpg'),
-  ('Alloco œuf', 'Bananes plantains frites, œufs, sauce tomate pimentée', 1000, 'plat', '{oeuf}', true, null),
-  ('Bissap', 'Jus de fleurs d''hibiscus, menthe', 300, 'boisson', '{}', true, null)
+  ('Alloco œuf', 'Bananes plantains frites, œufs, sauce tomate pimentée', 1000, 'plat', '{oeuf}', true, '/plats/alloco-oeuf.jpg'),
+  ('Bissap', 'Jus de fleurs d''hibiscus, menthe', 300, 'boisson', '{}', true, '/plats/bissap.jpg')
 ) as v(nom, description, prix, type, allergenes, vegetarien, photo_url)
 where not exists (select 1 from public.plats p where p.nom = v.nom);
 

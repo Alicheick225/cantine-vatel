@@ -36,7 +36,8 @@ Dans une cantine, la cuisine découvre la demande au moment du service. Elle pr�
 **Administrateur, sur ordinateur et tablette**
 - **Aujourd'hui** : chiffres clés, commandes par plat **en direct**, affluence par créneau, suggestion anti-gaspillage et lancement d'une offre de fin de service.
 - **Comptoir** (tablette, plein écran) : scan du QR par caméra ou saisie du code court, puis écran **vert ou rouge**, avec une alerte si le plat contient un allergène déclaré. Deux organisations au choix : une personne scanne et sert, ou bien on scanne à l'entrée et l'**écran du passe** affiche en direct les plats à remettre.
-- **Menus** de la semaine (portions prévues et préparées) et **plats** (création, prix, photo, désactivation).
+- **Équipe du comptoir** : l'admin est le **super-admin** (il voit tout, peut scanner et servir) et nomme deux rôles limités : la **scanneuse**, qui ne voit que l'écran de contrôle à l'entrée, et la **serveuse**, qui ne voit que l'écran du passe. Moindre privilège imposé par la base, chaque nomination est journalisée.
+- **Menus** de la semaine (portions prévues et préparées) et **plats** (création, **modification**, prix, photo, désactivation).
 - **Alertes de rupture** : demande prévue supérieure aux portions prévues, plats presque épuisés.
 - **Rapport d'activité** sur une période, exportable en **CSV** et imprimable en **PDF**.
 - **Prévision** des repas, bouton « Appliquer au menu », suivi du **gaspillage** sur 6 semaines.
@@ -86,9 +87,10 @@ Tablette (comptoir) ─┘                                            ├─ Aut
 **Tests automatiques** (exécutés dans une transaction annulée, ils ne laissent aucune trace) :
 - `supabase/tests/securite.sql` : 12 tests (inscription en admin impossible, lecture des données d'autrui, modification du solde ou du rôle, écriture directe d'une transaction, immuabilité du journal…) ;
 - `supabase/tests/metier.sql` : 17 tests (recharge, réservation, limite de 8h, un repas par jour, annulation remboursée, scan vert puis rouge, cohérence solde / transactions…) ;
-- `supabase/tests/parent.sql` : 10 tests (liaison par code, le parent ne voit que son enfant, recharge tracée, refus d'un code invalide journalisé…).
+- `supabase/tests/parent.sql` : 10 tests (liaison par code, le parent ne voit que son enfant, recharge tracée, refus d'un code invalide journalisé…) ;
+- `supabase/tests/equipe.sql` : 15 tests (la scanneuse valide sans pouvoir remettre ni gérer, la serveuse remet sans pouvoir scanner, personne ne devient admin depuis l'application ni ne change son propre rôle, nominations tracées…).
 
-**Résultat : 39 tests sur 39 réussis.** S'y ajoute l'analyse de sécurité de Supabase (`supabase db advisors`). Les seuls avertissements restants concernent les fonctions métier, volontairement ouvertes aux utilisateurs connectés et qui contrôlent elles-mêmes le rôle, ainsi qu'une option d'authentification réservée aux offres payantes.
+**Résultat : 54 tests sur 54 réussis.** S'y ajoute l'analyse de sécurité de Supabase (`supabase db advisors`). Les seuls avertissements restants concernent les fonctions métier, volontairement ouvertes aux utilisateurs connectés et qui contrôlent elles-mêmes le rôle, ainsi qu'une option d'authentification réservée aux offres payantes.
 
 ## Prévision : comment elle fonctionne
 
@@ -116,6 +118,7 @@ supabase db query --remote -f supabase/demo/historique.sql  # historique de dém
 supabase db query --remote -f supabase/tests/securite.sql   # tests de sécurité
 supabase db query --remote -f supabase/tests/metier.sql     # tests métier
 supabase db query --remote -f supabase/tests/parent.sql     # tests de l'espace parent
+supabase db query --remote -f supabase/tests/equipe.sql     # tests des rôles d'équipe
 ```
 
 ## Organisation du dépôt
@@ -124,7 +127,7 @@ supabase db query --remote -f supabase/tests/parent.sql     # tests de l'espace 
 src/
   auth/        session et redirection selon le rôle
   layouts/     convive (barre en bas), admin (menu latéral)
-  pages/       convive/ (menu, réservation, tickets, solde, profil), parent/ et admin/ (aujourd'hui, comptoir, menus, plats, prévision, journal)
+  pages/       convive/ (menu, réservation, tickets, solde, profil), parent/ et admin/ (aujourd'hui, comptoir, passe, menus, plats, prévision, rapports, équipe, journal)
   components/  éléments d'interface (ticket, plat, boutons…)
   lib/         client Supabase, accès aux données, temps réel, formats
 supabase/
@@ -149,12 +152,14 @@ L'IA était autorisée par le règlement. **Ali Ouattara** a conçu le projet : 
 ## Crédits
 
 - **Charte graphique :** inspirée de l'identité de Vatel Abidjan (bleu marine, bleu ciel, orange, corail), avec des contrastes corrigés pour la lisibilité.
-- **Photos des plats** (Wikimedia Commons, licences libres, copies allégées dans `public/plats`) :
-  - Le Garba, par Didierwiki (CC0) ;
-  - Kédjénou de poulet sauce claire, par African Hope (CC BY-SA 4.0) ;
-  - Aloko, par Krista (CC BY 2.0) ;
-  - Sauce graine, par KONE IF (CC BY 4.0) ;
-  - Attiéké poisson fumé, par Samigolden07 (CC0) ;
-  - Placali à la sauce kôpê, par AZIMIE (CC BY-SA 4.0).
+- **Photos des plats** (Pexels, licence libre d'usage, copies allégées dans `public/plats`) :
+  - Attiéké poisson braisé : Masuma Rahaman ;
+  - Garba : Iara Melo ;
+  - Alloco poulet braisé : Paul Nana ;
+  - Alloco œuf : Ophelia Acquah ;
+  - Riz sauce graine : Workman House ;
+  - Kédjénou de poulet : Letícia Alvares ;
+  - Placali sauce kopè : Ellis Mbeku ;
+  - Bissap : Moisés Fonseca.
 
   Ces photos illustrent les plats : ce ne sont pas des photos de la cantine.
