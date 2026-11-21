@@ -1,7 +1,7 @@
 import { NavLink, Outlet, Link } from 'react-router-dom'
 import { useAuth } from '../auth/AuthProvider'
 import { BandeVatel } from '../components/ui'
-import { IconBowlChopsticks, IconCalendarWeek, IconChartLine, IconLayoutDashboard, IconListSearch, IconLogout, IconReportAnalytics, IconScan } from '@tabler/icons-react'
+import { IconBowlChopsticks, IconCalendarWeek, IconChartLine, IconLayoutDashboard, IconListSearch, IconLogout, IconReportAnalytics, IconScan, IconToolsKitchen2 } from '@tabler/icons-react'
 
 // Les mêmes icônes que la maquette admin (Tabler Icons, contour).
 const LIENS = [
@@ -42,6 +42,9 @@ export default function AdminLayout() {
           ))}
           <Link to="/admin/comptoir" className="m-2 md:m-3 flex items-center gap-2 rounded-xl bg-action text-marine font-bold text-sm px-3 py-2.5 whitespace-nowrap">
             <IconScan size={20} stroke={2} aria-hidden /> Ouvrir le comptoir
+          </Link>
+          <Link to="/admin/passe" className="mx-2 md:mx-3 mb-2 flex items-center gap-2 rounded-xl border border-white/30 text-white text-sm px-3 py-2 whitespace-nowrap">
+            <IconToolsKitchen2 size={18} aria-hidden /> Écran du passe
           </Link>
           <button onClick={deconnexion} className="md:hidden flex items-center gap-1.5 whitespace-nowrap px-4 py-2.5 text-sm text-white/80">
             <IconLogout size={18} aria-hidden /> Se déconnecter

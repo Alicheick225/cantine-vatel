@@ -11,6 +11,7 @@ import { IconAlertTriangle, IconArrowRight, IconCheck, IconX } from '@tabler/ico
 
 interface InfoTicket {
   plat: string
+  allergenes_plat?: Allergene[]
   convive: string
   categorie: 'etudiant' | 'personnel' | null
   allergies: Allergene[]
@@ -22,6 +23,7 @@ interface InfoTicket {
 }
 interface Resultat {
   ok: boolean
+  envoye_au_passe?: boolean
   raison?: 'inconnu' | 'autre_jour' | 'annule' | 'deja_servi'
   ticket: InfoTicket | null
 }
@@ -33,6 +35,9 @@ const RAISONS = {
   deja_servi: 'Déjà servi',
 } as const
 
+/** Allergènes du plat que le convive a déclarés. */
+const conflits = (t: InfoTicket) => (t.allergenes_plat ?? []).filter((a) => t.allergies.includes(a))
+
 const heureAbidjan = (iso: string) =>
   new Date(iso).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Abidjan' })
 
@@ -41,6 +46,14 @@ export default function Comptoir() {
   const [code, setCode] = useState('')
   const [erreur, setErreur] = useState<string | null>(null)
   const [cameraKo, setCameraKo] = useState<string | null>(null)
+  // Configuration 1 : une personne scanne et sert. Configuration 2 : on scanne à l'entrée, un collègue sert au passe.
+  const [mode, setMode] = useState<'unique' | 'entree'>(() => {
+    try { return localStorage.getItem('comptoir-mode') === 'entree' ? 'entree' : 'unique' } catch { return 'unique' }
+  })
+  const changerMode = (m: 'unique' | 'entree') => {
+    setMode(m)
+    try { localStorage.setItem('comptoir-mode', m) } catch { /* stockage indisponible : le choix reste pour la session */ }
+  }
   const enCours = useRef(false)
   const dernier = useRef<{ texte: string; t: number }>({ texte: '', t: 0 })
   const { data: tb } = useTableauBord(aujourdhui())
@@ -52,7 +65,7 @@ export default function Comptoir() {
     enCours.current = true
     dernier.current = { texte, t }
     setErreur(null)
-    const { data, error } = await supabase.rpc('servir', { p_code: texte })
+    const { data, error } = await supabase.rpc('servir', { p_code: texte, p_remettre: mode === 'unique' })
     if (error) {
       setErreur(messageErreur(error))
       enCours.current = false
@@ -62,7 +75,7 @@ export default function Comptoir() {
     if (!r.ok && 'vibrate' in navigator) navigator.vibrate?.([120, 80, 120])
     setResultat(r)
     setCode('')
-  }, [])
+  }, [mode])
 
   const suivant = useCallback(() => {
     setResultat(null)
@@ -113,6 +126,12 @@ export default function Comptoir() {
           {cameraKo && <p className="absolute inset-0 flex items-center justify-center text-center p-6 text-sm opacity-90">{cameraKo}</p>}
         </div>
         <p className="text-sm opacity-85">Placez le QR code du ticket devant la caméra</p>
+        <div className="w-full grid grid-cols-2 gap-1 rounded-xl bg-white/10 p-1 text-xs" role="group" aria-label="Organisation du comptoir">
+          {([['unique', 'Je scanne et je sers'], ['entree', "Je scanne à l'entrée (passe)"]] as const).map(([m, l]) => (
+            <button key={m} onClick={() => changerMode(m)} aria-pressed={mode === m}
+              className={`rounded-lg py-2 font-semibold ${mode === m ? 'bg-white text-marine' : 'text-white/80'}`}>{l}</button>
+          ))}
+        </div>
         <form onSubmit={soumettre} className="w-full flex gap-2">
           <label className="flex-1 flex items-center bg-white rounded-xl px-3">
             <span className="font-mono text-marine text-lg">VTL-</span>
@@ -139,7 +158,9 @@ export default function Comptoir() {
           <div className={`w-24 h-24 rounded-full bg-white flex items-center justify-center text-6xl font-bold ${resultat.ok ? 'text-valide' : 'text-refus'}`}>
             {resultat.ok ? <IconCheck size={60} stroke={3} /> : <IconX size={60} stroke={3} />}
           </div>
-          <p className="mt-5 font-extrabold tracking-[0.2em] text-sm">{resultat.ok ? 'À SERVIR' : 'NE PAS SERVIR'}</p>
+          <p className="mt-5 font-extrabold tracking-[0.2em] text-sm">
+            {resultat.ok ? (resultat.envoye_au_passe ? 'VALIDÉ · ENVOYÉ AU PASSE' : 'À SERVIR') : 'NE PAS SERVIR'}
+          </p>
           <p className="font-titre font-black text-4xl mt-2 max-w-lg">
             {resultat.ok ? resultat.ticket?.plat : RAISONS[resultat.raison ?? 'inconnu']}
           </p>
@@ -149,6 +170,11 @@ export default function Comptoir() {
               {!resultat.ok && resultat.raison === 'autre_jour' && <>Ticket du {jourLong(resultat.ticket.jour)}<br /></>}
               {!resultat.ok && `${resultat.ticket.plat} · `}
               {resultat.ticket.convive} · {resultat.ticket.categorie === 'personnel' ? 'personnel' : 'étudiant(e)'} · {resultat.ticket.code_court}
+            </p>
+          )}
+          {resultat.ok && resultat.ticket && conflits(resultat.ticket).length > 0 && (
+            <p className="mt-5 rounded-2xl bg-refus text-white font-extrabold px-5 py-3 text-lg inline-flex items-center gap-2 max-w-lg">
+              <IconAlertTriangle size={24} /> Attention : ce plat contient {conflits(resultat.ticket).map((a) => LIBELLE_ALLERGENE[a].toLowerCase()).join(', ')}, allergie déclarée
             </p>
           )}
           {resultat.ok && resultat.ticket && (resultat.ticket.allergies.length > 0 || resultat.ticket.vegetarien) && (

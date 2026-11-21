@@ -21,6 +21,7 @@ const Plats = lazy(() => import('./pages/admin/Plats'))
 const Prevision = lazy(() => import('./pages/admin/Prevision'))
 const Journal = lazy(() => import('./pages/admin/Journal'))
 const Rapports = lazy(() => import('./pages/admin/Rapports'))
+const Passe = lazy(() => import('./pages/admin/Passe'))
 const Parent = lazy(() => import('./pages/parent/Parent'))
 
 export default function App() {
@@ -49,6 +50,7 @@ export default function App() {
       {/* Administrateur */}
       <Route element={<Garde roles={['admin']} />}>
         <Route path="/admin/comptoir" element={<Comptoir />} />
+        <Route path="/admin/passe" element={<Passe />} />
         <Route element={<AdminLayout />}>
           <Route path="/admin" element={<Aujourdhui />} />
           <Route path="/admin/menus" element={<Menus />} />

@@ -101,6 +101,29 @@ end $$;
 
 reset role;
 
+-- ===== Écran du passe (configuration 2) : validation à l'entrée, puis remise =====
+insert into public.reservations (utilisateur_id, menu_jour_id, creneau_id, jour, prix_paye, est_offre, jeton_qr, code_court)
+select '00000000-0000-0000-0000-0000000000a1', (select val::bigint from ctx where cle = 'menu_jour'),
+       (select val::smallint from ctx where cle = 'creneau'), public.aujourdhui(), 0, true,
+       'jetonpasse0000000000000000000000000000000000000000000000000000000', 'VTL-9043';
+set local role authenticated;
+select set_config('request.jwt.claims', '{"sub":"00000000-0000-0000-0000-0000000000d1","role":"authenticated"}', true);
+do $$
+declare v json; r bigint; m text;
+begin
+  v := public.servir('VTL-9043', false);
+  r := (v -> 'ticket' ->> 'reservation_id')::bigint;
+  insert into resultats (critere, test, resultat) values ('Métier', 'Configuration 2 : ticket validé à l''entrée et envoyé au passe',
+    case when (v ->> 'ok')::boolean and (v ->> 'envoye_au_passe')::boolean
+              and (select remis_le is null and scanne_le is not null from public.reservations where id = r) then 'OK' else 'ÉCHEC : ' || v::text end);
+  perform public.remettre(r);
+  begin perform public.remettre(r); m := 'ÉCHEC';
+  exception when others then m := case when sqlerrm like '%déjà été remis%' then 'OK' else 'ÉCHEC : ' || sqlerrm end; end;
+  insert into resultats (critere, test, resultat) values ('Métier', 'Le passe confirme la remise, une seule fois',
+    case when m = 'OK' and (select remis_le is not null from public.reservations where id = r) then 'OK' else m end);
+end $$;
+reset role;
+
 insert into resultats (critere, test, resultat)
 select 'Traçabilité', 'Les refus au comptoir sont journalisés',
        case when count(*) = 2 then 'OK' else 'ÉCHEC : ' || count(*) end
