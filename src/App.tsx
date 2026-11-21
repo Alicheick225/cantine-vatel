@@ -14,6 +14,7 @@ import Aujourdhui from './pages/admin/Aujourdhui'
 import Comptoir from './pages/admin/Comptoir'
 import Menus from './pages/admin/Menus'
 import Plats from './pages/admin/Plats'
+import Prevision from './pages/admin/Prevision'
 
 export default function App() {
   return (
@@ -39,7 +40,7 @@ export default function App() {
           <Route path="/admin" element={<Aujourdhui />} />
           <Route path="/admin/menus" element={<Menus />} />
           <Route path="/admin/plats" element={<Plats />} />
-          <Route path="/admin/prevision" element={<Bientot titre="Prévision" />} />
+          <Route path="/admin/prevision" element={<Prevision />} />
           <Route path="/admin/journal" element={<Bientot titre="Journal d'audit" />} />
         </Route>
       </Route>
